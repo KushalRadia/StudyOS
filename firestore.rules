@@ -1,0 +1,146 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Helper for resource ownership
+    function isDocOwner(data) {
+      return isSignedIn() && data.uid == request.auth.uid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Validation Helpers
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'email', 'createdAt']) &&
+             data.name is string && data.name.size() <= 100 &&
+             data.email == request.auth.token.email;
+    }
+
+    function isValidFlashcard(data) {
+      return data.keys().hasAll(['front', 'back', 'title', 'uid', 'status', 'interval', 'factor', 'nextReview', 'createdAt']) &&
+             data.front is string && data.front.size() <= 1000 &&
+             data.back is string && data.back.size() <= 2000 &&
+             data.title is string && data.title.size() <= 200 &&
+             data.uid == request.auth.uid &&
+             data.status in ['new', 'learning', 'reviewing'];
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photoURL', 'toolUsage']);
+    }
+
+    // 2. Tools History Collections (Shared patterns)
+    match /explainerHistory/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /writeUnblockHistory/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /studyPlansHistory/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow update: if isDocOwner(resource.data) && isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /pyqResults/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /lectureNotes/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /teachSessions/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow update: if isDocOwner(resource.data) && isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /conceptMaps/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /errorLog/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /history/{entryId} {
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    match /flashcards/{cardId} {
+      // SECURE LIST QUERY: Rules must check resource.data to prevent unauthorized scraping
+      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow get: if isDocOwner(resource.data);
+      allow create: if isDocOwner(request.resource.data) && isValidFlashcard(request.resource.data);
+      allow update: if isDocOwner(resource.data) && isDocOwner(request.resource.data);
+      allow delete: if isDocOwner(resource.data);
+    }
+
+    // 3. Collaboration
+    match /collabSessions/{sessionId} {
+      allow get: if isSignedIn() && request.auth.uid in resource.data.members;
+      allow list: if isSignedIn() && request.auth.uid in resource.data.members;
+      allow create: if isSignedIn() && isValidId(sessionId) && 
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.members.size() > 0 &&
+        request.resource.data.createdAt == request.time;
+      allow update: if isSignedIn() && request.auth.uid in resource.data.members &&
+        request.resource.data.createdBy == resource.data.createdBy &&
+        request.resource.data.updatedAt == request.time;
+
+      match /presence/{userId} {
+        allow read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/collabSessions/$(sessionId)).data.members;
+        allow write: if isOwner(userId) && 
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.lastSeen == request.time;
+      }
+    }
+  }
+}

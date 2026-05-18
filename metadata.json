@@ -1,0 +1,10 @@
+{
+  "name": "StudyOS",
+  "description": "A unified AI-powered student productivity suite with 8 specialized study tools.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
