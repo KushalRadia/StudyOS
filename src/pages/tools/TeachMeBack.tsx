@@ -150,7 +150,7 @@ ${languageInstruction}`;
       </div>
 
       {!sessionActive && !report && (
-        <div className="bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant shadow-sm mb-8 max-w-2xl mx-auto">
+        <div className="w-full max-w-2xl mx-auto bg-surface-container-lowest p-8 rounded-2xl border border-outline-variant shadow-sm mb-8">
           <label className="font-label-md text-label-md text-on-surface-variant mb-3 block uppercase tracking-wider">What do you want to teach?</label>
           <div className="relative mb-6">
             <input
