@@ -59,8 +59,9 @@ export default function Navbar() {
             </span>
             <input
               type="text"
-              placeholder="Search knowledge..."
-              className="bg-transparent border-none focus:ring-0 text-body-sm font-body-sm p-0 w-48 outline-none"
+              disabled
+              placeholder="Search (coming soon)"
+              className="bg-transparent border-none focus:ring-0 text-body-sm font-body-sm p-0 w-48 outline-none opacity-50 cursor-not-allowed"
             />
           </div>
 
@@ -79,6 +80,14 @@ export default function Navbar() {
             </button>
             <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">
               help
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold text-on-surface-variant hover:bg-error-container/10 hover:text-error transition-colors border border-outline-variant"
+            >
+              <span className="material-symbols-outlined text-[16px]">logout</span>
+              Logout
             </button>
 
             <div className="flex items-center gap-3 ml-2">

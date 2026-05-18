@@ -13,6 +13,7 @@ const sidebarTools = [
   { name: "Digest", icon: "audio_file", path: "/tools/lecturedigest" },
   { name: "Diagnose", icon: "error_outline", path: "/tools/whyamiwrong" },
   { name: "Mapper", icon: "account_tree", path: "/tools/conceptlinker" },
+  { name: "Collab Hub", icon: "groups", path: "/hub" },
 ];
 
 export default function Sidebar() {

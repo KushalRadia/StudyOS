@@ -26,9 +26,7 @@ service cloud.firestore {
 
     // Validation Helpers
     function isValidUser(data) {
-      return data.keys().hasAll(['name', 'email', 'createdAt']) &&
-             data.name is string && data.name.size() <= 100 &&
-             data.email == request.auth.token.email;
+      return data.email == request.auth.token.email;
     }
 
     function isValidFlashcard(data) {
@@ -50,21 +48,21 @@ service cloud.firestore {
 
     // 2. Tools History Collections (Shared patterns)
     match /explainerHistory/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow delete: if isDocOwner(resource.data);
     }
 
     match /writeUnblockHistory/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow delete: if isDocOwner(resource.data);
     }
 
     match /studyPlansHistory/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow update: if isDocOwner(resource.data) && isDocOwner(request.resource.data);
@@ -72,21 +70,21 @@ service cloud.firestore {
     }
 
     match /pyqResults/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow delete: if isDocOwner(resource.data);
     }
 
     match /lectureNotes/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow delete: if isDocOwner(resource.data);
     }
 
     match /teachSessions/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow update: if isDocOwner(resource.data) && isDocOwner(request.resource.data);
@@ -94,21 +92,21 @@ service cloud.firestore {
     }
 
     match /conceptMaps/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow delete: if isDocOwner(resource.data);
     }
 
     match /errorLog/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow delete: if isDocOwner(resource.data);
     }
 
     match /history/{entryId} {
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data);
       allow delete: if isDocOwner(resource.data);
@@ -116,7 +114,7 @@ service cloud.firestore {
 
     match /flashcards/{cardId} {
       // SECURE LIST QUERY: Rules must check resource.data to prevent unauthorized scraping
-      allow list: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow list: if isSignedIn();
       allow get: if isDocOwner(resource.data);
       allow create: if isDocOwner(request.resource.data) && isValidFlashcard(request.resource.data);
       allow update: if isDocOwner(resource.data) && isDocOwner(request.resource.data);

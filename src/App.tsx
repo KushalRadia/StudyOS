@@ -20,8 +20,6 @@ import CollabRoom from "./pages/CollabRoom";
 import Flashcards from "./pages/Flashcards";
 import History from "./pages/History";
 import PanicMode from "./pages/PanicMode";
-import { useReminderChecker } from "./hooks/useReminderChecker";
-
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -43,7 +41,6 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 }
 
 function AppContent() {
-  useReminderChecker();
   return (
     <BrowserRouter>
       <Routes>

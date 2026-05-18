@@ -26,7 +26,7 @@ app.post("/api/gemini/generate", async (req, res) => {
   try {
     const { prompt, model: modelName } = req.body;
     const response = await ai.models.generateContent({
-      model: modelName || "gemini-1.5-flash",
+      model: modelName || "gemini-2.5-flash",
       contents: prompt,
     });
     res.json({ text: response.text });
@@ -40,7 +40,7 @@ app.post("/api/gemini/multimodal", async (req, res) => {
   try {
     const { prompt, fileData, mimeType, model: modelName } = req.body;
     const response = await ai.models.generateContent({
-      model: modelName || "gemini-1.5-flash",
+      model: modelName || "gemini-2.5-flash",
       contents: {
         parts: [
           { inlineData: { data: fileData, mimeType } },
@@ -59,7 +59,7 @@ app.post("/api/gemini/chat", async (req, res) => {
   try {
     const { history, model: modelName } = req.body;
     const chat = ai.chats.create({
-      model: modelName || "gemini-1.5-flash",
+      model: modelName || "gemini-2.5-flash",
       history: history.slice(0, -1), // all but last message
     });
     const lastMessage = history[history.length - 1];

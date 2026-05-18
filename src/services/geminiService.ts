@@ -12,7 +12,7 @@ export async function callGemini(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       prompt: fullPrompt,
-      model: options.model || "gemini-1.5-flash",
+      model: options.model || "gemini-2.5-flash",
     }),
   });
 
@@ -41,7 +41,7 @@ export async function callGeminiWithFile(
       prompt: fullPrompt,
       fileData,
       mimeType,
-      model: options.model || "gemini-1.5-flash",
+      model: options.model || "gemini-2.5-flash",
     }),
   });
 
@@ -55,10 +55,14 @@ export async function callGeminiWithFile(
 }
 
 export async function callGeminiChat(history: any[], newMessage: string) {
+  const fullHistory = [
+    ...history,
+    { role: "user", parts: [{ text: newMessage }] }
+  ];
   const response = await fetch("/api/gemini/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ history }),
+    body: JSON.stringify({ history: fullHistory }),
   });
   if (!response.ok) {
     const errorData = await response.json();

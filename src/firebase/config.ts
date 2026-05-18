@@ -6,6 +6,10 @@ import backupConfig from "../../firebase-applet-config.json";
 
 const metaEnv = (import.meta as any).env || {};
 
+if (!metaEnv.VITE_FIREBASE_API_KEY) {
+  console.warn('Using backup Firebase config from firebase-applet-config.json. Set VITE_FIREBASE_* variables in .env for production.');
+}
+
 const firebaseConfig = {
   apiKey: metaEnv.VITE_FIREBASE_API_KEY || backupConfig.apiKey,
   authDomain: metaEnv.VITE_FIREBASE_AUTH_DOMAIN || backupConfig.authDomain,

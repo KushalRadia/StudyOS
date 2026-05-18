@@ -21,12 +21,14 @@ const tools: ToolDef[] = [
   { id: "whyamiwrong", title: "Diagnose", description: "Identify gaps in your knowledge.", icon: "error_outline", path: "/tools/whyamiwrong" },
   { id: "conceptlinker", title: "Mapper", description: "Visualize connections between ideas.", icon: "account_tree", path: "/tools/conceptlinker" },
   { id: "snapsolve", title: "Snap & Solve", description: "Photo any question and get an instant AI solution.", icon: "photo_camera", path: "/tools/snapsolve" },
+  { id: "hub", title: "Collab Hub", description: "Study live with peers and expert AI.", icon: "groups", path: "/hub" },
 ];
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [toolUsage, setToolUsage] = useState<Record<string, number>>({});
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -44,13 +46,28 @@ export default function Dashboard() {
           limit(5),
         );
         const historySnap = await getDocs(historyQuery);
-        setRecentActivity(
-          historySnap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-            createdAt: d.data().createdAt?.toDate() || new Date(),
-          })),
-        );
+        const activities = historySnap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+          createdAt: d.data().createdAt?.toDate() || new Date(),
+        }));
+        setRecentActivity(activities);
+
+        let currentStreak = 0;
+        let checkDate = new Date();
+        checkDate.setHours(0,0,0,0);
+        
+        const uniqueDates = new Set(activities.map(a => {
+          const d = new Date(a.createdAt);
+          d.setHours(0,0,0,0);
+          return d.getTime();
+        }));
+        
+        while (uniqueDates.has(checkDate.getTime())) {
+          currentStreak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        }
+        setStreak(currentStreak);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       }
@@ -81,16 +98,16 @@ export default function Dashboard() {
           </div>
           <div>
             <h1 className="font-headline-lg text-headline-lg text-on-background">Welcome back, {user?.displayName?.split(" ")[0] || "Julian"}!</h1>
-            <p className="font-body-md text-body-md text-on-surface-variant">You have 3 exams approaching. Let's make today productive.</p>
+            <p className="font-body-md text-body-md text-on-surface-variant">{recentActivity.length > 0 ? "You have recent activity. Keep the momentum going!" : "Start using your study tools to build momentum."}</p>
           </div>
         </div>
         <div className="flex items-center gap-md">
           <div className="text-right hidden md:block">
             <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Current Streak</p>
-            <p className="font-headline-sm text-headline-sm text-primary">12 Days 🔥</p>
+            <p className="font-headline-sm text-headline-sm text-primary">{streak > 0 ? `${streak} Day${streak !== 1 ? 's' : ''} 🔥` : "Start Streak 🎯"}</p>
           </div>
           <button className="bg-primary-container text-on-primary-container px-lg py-sm rounded-lg font-label-md text-label-md hover:scale-95 transition-all">
-            Daily Goal: 80%
+            Study Dashboard
           </button>
         </div>
       </section>
@@ -117,7 +134,7 @@ export default function Dashboard() {
 
           <div className="flex items-center justify-between mb-md px-2">
             <h3 className="font-headline-sm text-headline-sm text-on-background">Study Tools</h3>
-            <button className="text-primary font-label-md text-label-md hover:underline">View All</button>
+            <Link to="/history" className="text-primary font-label-md text-label-md hover:underline">View All</Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-md">
             {tools.map((tool) => (

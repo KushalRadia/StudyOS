@@ -33,7 +33,12 @@ export default function CollaborationHub() {
   const [newType, setNewType] = useState<"study-plan" | "mind-map">(
     "study-plan",
   );
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+
+  const filteredSessions = sessions.filter(s =>
+    s.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -133,6 +138,8 @@ export default function CollaborationHub() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant opacity-40" />
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Filter current rooms..."
             className="w-full pl-11 pr-4 py-3 bg-surface-container border border-outline-variant rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-sm"
           />
@@ -145,7 +152,7 @@ export default function CollaborationHub() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence mode="popLayout">
-          {sessions.map((session) => (
+          {filteredSessions.map((session) => (
             <motion.div
               layout
               initial={{ opacity: 0, scale: 0.95 }}

@@ -107,7 +107,7 @@ Return ONLY the JSON. No markdown, no backticks.`;
               <span className="material-symbols-outlined text-primary">history_edu</span>
               <span className="font-body-sm text-body-sm text-on-surface-variant">Include key technical terms</span>
             </div>
-            <button className="flex items-center gap-2 text-primary font-label-md hover:underline">
+            <button disabled title="Coming soon" className="flex items-center gap-2 text-primary font-label-md hover:underline opacity-50 cursor-not-allowed">
               <span className="material-symbols-outlined">upload_file</span>
               Upload PDF
             </button>
@@ -270,11 +270,19 @@ Return ONLY the JSON. No markdown, no backticks.`;
                 content={[result.oneSentenceSummary, ...result.mustKnow]}
                 toolLabel="Must Know"
               />
-              <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 border border-outline text-on-surface-variant rounded-full font-label-md hover:bg-surface-container transition-all">
+              <button onClick={() => {
+                const textToShare = result?.oneSentenceSummary || "Check out this explanation!";
+                if (navigator.share) {
+                  navigator.share({ title: 'StudyOS Explanation', text: textToShare }).catch(console.error);
+                } else {
+                  navigator.clipboard.writeText(textToShare);
+                  alert("Copied to clipboard!");
+                }
+              }} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 border border-outline text-on-surface-variant rounded-full font-label-md hover:bg-surface-container transition-all">
                 <span className="material-symbols-outlined">share</span>
                 Share explanation
               </button>
-              <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 border border-outline text-on-surface-variant rounded-full font-label-md hover:bg-surface-container transition-all">
+              <button onClick={() => window.print()} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 border border-outline text-on-surface-variant rounded-full font-label-md hover:bg-surface-container transition-all">
                 <span className="material-symbols-outlined">print</span>
                 Print PDF
               </button>

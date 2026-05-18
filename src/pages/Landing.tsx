@@ -135,7 +135,7 @@ const MARQUEE_ITEMS = [
 // --- Main component ---
 export default function Landing() {
   const navigate = useNavigate();
-  const { login, user } = useAuth();
+  const { login, loginDev, user } = useAuth();
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loggingIn, setLoggingIn] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -173,6 +173,7 @@ export default function Landing() {
       if (error.code === "auth/popup-closed-by-user") setLoginError(null);
       else if (error.code === "auth/popup-blocked") setLoginError("Pop-up blocked. Please allow pop-ups and try again.");
       else if (error.code === "auth/unauthorized-domain") setLoginError("Error: Localhost is not authorized in Firebase. Add it to Authentication > Settings > Authorized Domains.");
+      else if (error.code === "auth/invalid-api-key") setLoginError("Firebase API key is invalid. Please check your .env configuration or firebase-applet-config.json.");
       else setLoginError(error.message || "Sign-in failed. Please try again.");
     } finally {
       setLoggingIn(false);
@@ -361,6 +362,14 @@ export default function Landing() {
               {loggingIn ? "Connecting..." : "Start Mastering — It's Free"}
               {!loggingIn && <ArrowRight size={20} />}
             </button>
+            {import.meta.env.DEV && (
+              <button id="dev-bypass-login" onClick={() => {
+                loginDev();
+                navigate("/dashboard");
+              }} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', color: 'white', fontSize: '13px', fontWeight: 600 }}>
+                Dev Bypass Login
+              </button>
+            )}
             <a href="#tools" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none', fontSize: '15px', fontWeight: 500, transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color='white'} onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.35)'}>
               See all 10 tools ↓
             </a>
