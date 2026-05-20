@@ -75,16 +75,18 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix: stri
 
 // --- Data constants ---
 const TOOLS = [
-  { name: "5-Min Explainer", icon: Zap, accentColor: "#ef4444", bgColor: "rgba(239,68,68,0.1)", description: "Essentials in minutes" },
-  { name: "WriteUnblock", icon: PenTool, accentColor: "#3b82f6", bgColor: "rgba(59,130,246,0.1)", description: "Unstick your writing" },
-  { name: "TeachMeBack", icon: MessagesSquare, accentColor: "#22c55e", bgColor: "rgba(34,197,94,0.1)", description: "Teach to master" },
-  { name: "DeadlineReverse", icon: Calendar, accentColor: "#a855f7", bgColor: "rgba(168,85,247,0.1)", description: "Reverse from exam date" },
-  { name: "PYQSolver", icon: FileText, accentColor: "#f97316", bgColor: "rgba(249,115,22,0.1)", description: "Past papers decoded" },
-  { name: "LectureDigest", icon: Mic, accentColor: "#06b6d4", bgColor: "rgba(6,182,212,0.1)", description: "Audio → smart notes" },
-  { name: "WhyAmIWrong", icon: XOctagon, accentColor: "#f43f5e", bgColor: "rgba(244,63,94,0.1)", description: "Find your exact gap" },
-  { name: "ConceptLinker", icon: Share2, accentColor: "#6366f1", bgColor: "rgba(99,102,241,0.1)", description: "Map your knowledge" },
-  { name: "Collab Hub", icon: Users, accentColor: "#8b5cf6", bgColor: "rgba(139,92,246,0.1)", description: "Study together live" },
-  { name: "Spaced Flashcards", icon: Layers, accentColor: "#f59e0b", bgColor: "rgba(245,158,11,0.1)", description: "Beat forgetting forever" }
+  { name: "Explainer", icon: Zap, accentColor: "#ef4444", bgColor: "rgba(239,68,68,0.1)", description: "Simplify complex topics instantly." },
+  { name: "Unblock", icon: PenTool, accentColor: "#3b82f6", bgColor: "rgba(59,130,246,0.1)", description: "Stuck on a problem? Get a hint." },
+  { name: "Tutor", icon: MessagesSquare, accentColor: "#22c55e", bgColor: "rgba(34,197,94,0.1)", description: "Personalized AI learning assistant." },
+  { name: "Planner", icon: Calendar, accentColor: "#a855f7", bgColor: "rgba(168,85,247,0.1)", description: "Optimize your study schedule." },
+  { name: "Solver", icon: FileText, accentColor: "#f97316", bgColor: "rgba(249,115,22,0.1)", description: "Step-by-step math & logic solutions." },
+  { name: "Digest", icon: Mic, accentColor: "#06b6d4", bgColor: "rgba(6,182,212,0.1)", description: "Summarize long lectures & PDF's." },
+  { name: "Diagnose", icon: XOctagon, accentColor: "#f43f5e", bgColor: "rgba(244,63,94,0.1)", description: "Identify gaps in your knowledge." },
+  { name: "Mapper", icon: Share2, accentColor: "#6366f1", bgColor: "rgba(99,102,241,0.1)", description: "Visualize connections between ideas." },
+  { name: "Snap & Solve", icon: Layers, accentColor: "#f59e0b", bgColor: "rgba(245,158,11,0.1)", description: "Photo any question and get instant AI solution." },
+  { name: "Collab Hub", icon: Users, accentColor: "#8b5cf6", bgColor: "rgba(139,92,246,0.1)", description: "Study live with peers and expert AI." },
+  { name: "Exam Autopsy", icon: BookOpen, accentColor: "#ec4899", bgColor: "rgba(236,72,153,0.1)", description: "Full cognitive post-mortem of your mistakes." },
+  { name: "Study DNA", icon: Target, accentColor: "#14b8a6", bgColor: "rgba(20,184,166,0.1)", description: "Discover your unique learning archetype." }
 ];
 
 const TESTIMONIALS = [
@@ -122,7 +124,7 @@ const COMPARE_ROWS = [
 ];
 
 const MARQUEE_ITEMS = [
-  { icon: Brain, text: "10 AI Tools" },
+  { icon: Brain, text: "12 AI Tools" },
   { icon: Flame, text: "2,400+ Students" },
   { icon: TrendingUp, text: "87% Score Improvement" },
   { icon: Clock, text: "Save 3 Hours Daily" },
@@ -343,7 +345,7 @@ export default function Landing() {
               <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#4ade80' }} className="animate-ping"></div>
               <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#4ade80' }}></div>
             </div>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>10 AI Tools · Powered by Gemini</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.8)' }}>12 AI Tools · Powered by Gemini</span>
           </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1], delay: 0.1 }} style={{ fontSize: 'clamp(56px, 8vw, 110px)', fontWeight: 900, lineHeight: 1.0, letterSpacing: '-0.03em', margin: '0 0 24px 0' }}>
@@ -353,7 +355,7 @@ export default function Landing() {
           </motion.h1>
 
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1], delay: 0.2 }} style={{ fontSize: '18px', color: 'rgba(255,255,255,0.45)', maxWidth: '520px', margin: '0 auto 40px auto', lineHeight: 1.6 }}>
-            The only study platform built around how your brain actually learns — with 10 AI tools that diagnose your gaps, build your plan, and make exam mastery inevitable.
+            The only study platform built around how your brain actually learns — with 12 AI tools that diagnose your gaps, build your plan, and make exam mastery inevitable.
           </motion.p>
 
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.23, 1, 0.32, 1], delay: 0.3 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
@@ -371,7 +373,7 @@ export default function Landing() {
               </button>
             )}
             <a href="#tools" style={{ color: 'rgba(255,255,255,0.35)', textDecoration: 'none', fontSize: '15px', fontWeight: 500, transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color='white'} onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.35)'}>
-              See all 10 tools ↓
+              See all 12 tools ↓
             </a>
           </motion.div>
 
@@ -421,7 +423,7 @@ export default function Landing() {
         <div style={{ maxWidth: '960px', margin: '0 auto', display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
           {[
             { target: 2400, suffix: "+", color: "#a855f7", label: "Active Students" },
-            { target: 10, suffix: "", color: "#38bdf8", label: "Specialized AI Tools" },
+            { target: 12, suffix: "", color: "#38bdf8", label: "Specialized AI Tools" },
             { target: 87, suffix: "%", color: "#4ade80", label: "Score Improvement" },
             { target: 3, suffix: "h", color: "#f59e0b", label: "Saved Per Day" }
           ].map((stat, idx) => (
@@ -443,7 +445,7 @@ export default function Landing() {
               <Zap size={14} /> The Arsenal
             </div>
             <h2 style={{ fontSize: 'clamp(40px, 6vw, 72px)', fontWeight: 900, letterSpacing: '-0.03em', margin: '0 0 16px 0', lineHeight: 1.1 }}>
-              10 tools. <span style={{ fontFamily: "'DM Serif Display', serif", fontStyle: 'italic', fontWeight: 'normal', color: '#a78bfa' }}>One mission.</span>
+              12 tools. <span style={{ fontFamily: "'DM Serif Display', serif", fontStyle: 'italic', fontWeight: 'normal', color: '#a78bfa' }}>One mission.</span>
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '18px', maxWidth: '500px', margin: '0 auto' }}>Every tool is purpose-built around a specific moment in your study journey.</p>
           </div>
