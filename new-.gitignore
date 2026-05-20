@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+
+# Environment variables - NEVER commit these
+.env
+.env.local
+.env.production
+
+# Keep .env.example
+!.env.example
+
+# Firebase cache
+.firebase/
