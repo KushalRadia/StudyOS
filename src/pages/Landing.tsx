@@ -113,14 +113,14 @@ const TESTIMONIALS = [
 ];
 
 const COMPARE_ROWS = [
-  { feature: "AI-powered explanations", studyos: true, others: false },
-  { feature: "Socratic tutoring", studyos: true, others: false },
-  { feature: "Audio lecture analysis", studyos: true, others: false },
-  { feature: "Past paper solving (AI)", studyos: true, others: false },
-  { feature: "Spaced repetition flashcards", studyos: true, others: true },
-  { feature: "Mistake diagnosis & root cause", studyos: true, others: false },
-  { feature: "Real-time collaboration", studyos: true, others: false },
-  { feature: "Knowledge graph mapping", studyos: true, others: false }
+  { feature: "WhyAmIWrong (mistake root-cause engine)", studyos: true, others: false },
+  { feature: "TeachMeBack (Socratic gap detection)", studyos: true, others: false },
+  { feature: "DeadlineReverse (exam-date reverse planning)", studyos: true, others: false },
+  { feature: "PYQSolver (past-year paper solving)", studyos: true, others: false },
+  { feature: "LectureDigest (audio-to-structured notes)", studyos: true, others: false },
+  { feature: "ConceptLinker (knowledge graph mapping)", studyos: true, others: false },
+  { feature: "Spaced recall flashcards", studyos: true, others: true },
+  { feature: "Live peer + AI study collaboration", studyos: true, others: false }
 ];
 
 const MARQUEE_ITEMS = [
