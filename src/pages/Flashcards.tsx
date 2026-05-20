@@ -41,7 +41,7 @@ export default function Flashcards() {
   const [studyList, setStudyList] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [mode, setMode] = useState<"list" | "study">("list");
+  const [mode, setMode] = useState<"list" | "study" | "decay">("list");
   const { languageInstruction } = useLanguage();
 
   // Group cards by title (deck name)
@@ -50,6 +50,20 @@ export default function Flashcards() {
     acc[card.title].push(card);
     return acc;
   }, {});
+
+  // Ebbinghaus forgetting curve retention score (0–100) for a single card
+  function computeRetention(card: any): number {
+    if (!card.lastReviewed) return 0;
+    const lastReviewed = card.lastReviewed.toDate
+      ? card.lastReviewed.toDate()
+      : new Date(card.lastReviewed);
+    const intervalDays = card.interval || 1;
+    const stabilityDays = intervalDays * 1.2;
+    const elapsedDays =
+      (Date.now() - lastReviewed.getTime()) / (1000 * 60 * 60 * 24);
+    const retention = Math.exp(-elapsedDays / stabilityDays);
+    return Math.round(retention * 100);
+  }
 
   const startReview = (deckTitle: string) => {
     const cards = decks[deckTitle];
@@ -180,12 +194,23 @@ export default function Flashcards() {
           </div>
 
           <div className="lg:col-span-3 space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
                 Your Knowledge Decks
               </h3>
-              <div className="text-xs font-medium text-on-surface-variant bg-surface-container px-3 py-1 rounded-full border border-outline-variant">
-                {Object.keys(decks).length} Active Decks
+              <div className="flex items-center gap-2">
+                <div className="text-xs font-medium text-on-surface-variant bg-surface-container px-3 py-1 rounded-full border border-outline-variant">
+                  {Object.keys(decks).length} Active Decks
+                </div>
+                {Object.keys(decks).length > 0 && (
+                  <button
+                    onClick={() => setMode("decay")}
+                    className="btn-secondary flex items-center gap-1.5 text-xs py-1.5 px-3"
+                  >
+                    <span className="material-symbols-outlined text-base">health_and_safety</span>
+                    Knowledge Health
+                  </button>
+                )}
               </div>
             </div>
 
@@ -271,6 +296,155 @@ export default function Flashcards() {
             )}
           </div>
         </div>
+      ) : mode === "decay" ? (
+        (() => {
+          // Compute per-deck retention
+          const deckList = Object.keys(decks).map((title) => {
+            const cards = decks[title];
+            const retentions = cards.map(computeRetention);
+            const avgRetention =
+              cards.length > 0
+                ? Math.round(
+                    retentions.reduce((a: number, b: number) => a + b, 0) /
+                      retentions.length
+                  )
+                : 0;
+            const atRisk = retentions.filter((r: number) => r < 40).length;
+            return { title, avgRetention, atRisk, cardCount: cards.length };
+          });
+
+          // Sort ascending — most urgent first
+          const sorted = [...deckList].sort(
+            (a, b) => a.avgRetention - b.avgRetention
+          );
+
+          const allRetentions = Object.values(decks)
+            .flat()
+            .map(computeRetention);
+          const brainHealth =
+            allRetentions.length > 0
+              ? Math.round(
+                  allRetentions.reduce((a: number, b: number) => a + b, 0) /
+                    allRetentions.length
+                )
+              : 0;
+          const totalAtRisk = allRetentions.filter((r) => r < 40).length;
+          const lowestDeck = sorted[0]?.title ?? "—";
+
+          const barColor = (score: number) =>
+            score > 70
+              ? "bg-secondary"
+              : score >= 40
+              ? "bg-tertiary"
+              : "bg-error";
+
+          const scoreText = (score: number) =>
+            score > 70 ? "text-secondary" : score >= 40 ? "text-tertiary" : "text-error";
+
+          return (
+            <div className="space-y-8">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-on-background">
+                  Knowledge Health
+                </h2>
+                <button
+                  onClick={() => setMode("list")}
+                  className="btn-secondary text-sm"
+                >
+                  ← Back to Decks
+                </button>
+              </div>
+
+              {/* Summary bento */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="card text-center space-y-1 p-5">
+                  <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                    Brain Health
+                  </p>
+                  <p
+                    className={`font-headline-md text-headline-md font-black ${
+                      scoreText(brainHealth)
+                    }`}
+                  >
+                    {brainHealth}%
+                  </p>
+                </div>
+                <div className="card text-center space-y-1 p-5">
+                  <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                    At Risk
+                  </p>
+                  <p className="font-headline-md text-headline-md font-black text-error">
+                    {totalAtRisk} cards
+                  </p>
+                </div>
+                <div className="card text-center space-y-1 p-5">
+                  <p className="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+                    Next Forget
+                  </p>
+                  <p className="font-label-md text-label-md font-black text-on-surface truncate">
+                    {lowestDeck}
+                  </p>
+                </div>
+              </div>
+
+              {/* Per-deck bars */}
+              <div className="space-y-4">
+                {sorted.map((deck) => (
+                  <div key={deck.title} className="card p-5 space-y-3">
+                    <div className="flex items-center justify-between gap-4 flex-wrap">
+                      <span className="font-label-md text-label-md font-bold text-on-surface truncate max-w-xs">
+                        {deck.title}
+                      </span>
+                      <button
+                        onClick={() => {
+                          startReview(deck.title);
+                        }}
+                        className="btn-primary text-xs py-1.5 px-3 shrink-0"
+                      >
+                        Review Now
+                      </button>
+                    </div>
+
+                    {/* Retention bar */}
+                    <div className="relative h-7 bg-surface-container rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full flex items-center justify-end pr-2 ${barColor(
+                          deck.avgRetention
+                        )}`}
+                        style={{
+                          width: `${Math.max(deck.avgRetention, 2)}%`,
+                          transition: "width 1s ease-out",
+                        }}
+                      >
+                        {deck.avgRetention >= 12 && (
+                          <span className="text-white text-[10px] font-black">
+                            {deck.avgRetention}%
+                          </span>
+                        )}
+                      </div>
+                      {deck.avgRetention < 12 && (
+                        <span
+                          className={`absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-black ${
+                            scoreText(deck.avgRetention)
+                          }`}
+                        >
+                          {deck.avgRetention}%
+                        </span>
+                      )}
+                    </div>
+
+                    {deck.atRisk > 0 && (
+                      <p className="font-label-sm text-label-sm text-error">
+                        {deck.atRisk} card{deck.atRisk !== 1 ? "s" : ""} at risk
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()
       ) : (
         <div className="max-w-2xl mx-auto space-y-12 py-8">
           <div className="flex items-center justify-between px-4">

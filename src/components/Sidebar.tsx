@@ -14,6 +14,8 @@ const sidebarTools = [
   { name: "Diagnose", icon: "error_outline", path: "/tools/whyamiwrong" },
   { name: "Mapper", icon: "account_tree", path: "/tools/conceptlinker" },
   { name: "Collab Hub", icon: "groups", path: "/hub" },
+  { name: "Exam Autopsy", icon: "biotech", path: "/tools/exam-autopsy" },
+  { name: "Study DNA", icon: "genetics", path: "/study-dna" },
 ];
 
 export default function Sidebar() {

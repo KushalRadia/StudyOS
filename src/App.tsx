@@ -20,6 +20,8 @@ import CollabRoom from "./pages/CollabRoom";
 import Flashcards from "./pages/Flashcards";
 import History from "./pages/History";
 import PanicMode from "./pages/PanicMode";
+import ExamAutopsy from "./pages/tools/ExamAutopsy";
+import StudyDNA from "./pages/StudyDNA";
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -202,6 +204,28 @@ function AppContent() {
               <ProtectedRoute>
                 <Layout>
                   <History />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/tools/exam-autopsy"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ExamAutopsy />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/study-dna"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <StudyDNA />
                 </Layout>
               </ProtectedRoute>
             }

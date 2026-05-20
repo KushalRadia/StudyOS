@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Initialize Gemini
 const ai = new GoogleGenAI({
@@ -20,6 +20,18 @@ const ai = new GoogleGenAI({
 });
 
 app.use(express.json({ limit: '50mb' }));
+
+// Enable CORS for cross-origin frontend-to-backend communication
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200);
+    return;
+  }
+  next();
+});
 
 // API Routes
 app.post("/api/gemini/generate", async (req, res) => {

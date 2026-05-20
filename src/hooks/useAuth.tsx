@@ -66,13 +66,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginDev = () => {
-    setUser({
-      uid: "dev-user-123",
-      displayName: "Dev Scholar",
-      email: "dev@studyos.com",
-      photoURL: null,
-    } as any);
-    setLoading(false);
+    if (import.meta.env.DEV) {
+      setUser({
+        uid: "dev-user-123",
+        displayName: "Dev Scholar",
+        email: "dev@studyos.com",
+        photoURL: null,
+      } as any);
+      setLoading(false);
+    }
   };
 
   const logout = async () => {

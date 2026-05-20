@@ -26,7 +26,22 @@ export default function VoiceInput({ onTranscript, placeholder = "Listening...",
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.lang = "en-IN"; // Indian English — works well for Indian students
+
+    // Map the app language stored in localStorage to the correct BCP-47 locale.
+    const LANGUAGE_MAP: Record<string, string> = {
+      en: "en-IN",
+      hi: "hi-IN",
+      gu: "gu-IN",
+      mr: "mr-IN",
+      ta: "ta-IN",
+      te: "te-IN",
+      kn: "kn-IN",
+      bn: "bn-IN",
+      pa: "pa-IN",
+    };
+    const storedLang = localStorage.getItem("studyos_language") || "en";
+    recognition.lang = LANGUAGE_MAP[storedLang] ?? "en-IN";
+
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => setIsListening(true);

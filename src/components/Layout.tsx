@@ -13,11 +13,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="flex">
+      <div className="relative">
         {!isLanding && <Sidebar />}
         <main
           className={cn(
-            "flex-1 transition-all duration-300",
+            "transition-all duration-300",
             !isLanding && "lg:ml-64 p-margin-mobile md:p-margin-desktop",
           )}
         >

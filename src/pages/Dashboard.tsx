@@ -22,6 +22,8 @@ const tools: ToolDef[] = [
   { id: "conceptlinker", title: "Mapper", description: "Visualize connections between ideas.", icon: "account_tree", path: "/tools/conceptlinker" },
   { id: "snapsolve", title: "Snap & Solve", description: "Photo any question and get an instant AI solution.", icon: "photo_camera", path: "/tools/snapsolve" },
   { id: "hub", title: "Collab Hub", description: "Study live with peers and expert AI.", icon: "groups", path: "/hub" },
+  { id: "examautopsy", title: "Exam Autopsy", description: "Full cognitive post-mortem of your mistakes.", icon: "biotech", path: "/tools/exam-autopsy" },
+  { id: "studydna", title: "Study DNA", description: "Discover your unique learning archetype.", icon: "genetics", path: "/study-dna" },
 ];
 
 export default function Dashboard() {
@@ -39,6 +41,7 @@ export default function Dashboard() {
           setToolUsage(userDoc.data().toolUsage || {});
         }
 
+        // Fetch last 5 entries for the Recent Activity sidebar display.
         const historyQuery = query(
           collection(db, "history"),
           where("uid", "==", user.uid),
@@ -53,16 +56,29 @@ export default function Dashboard() {
         }));
         setRecentActivity(activities);
 
+        // Fetch ALL history entries (no limit) for an accurate streak calculation.
+        // Using a separate query prevents the 5-item display cap from truncating
+        // streak days and always showing streak = 0 or 1.
+        const streakQuery = query(
+          collection(db, "history"),
+          where("uid", "==", user.uid),
+          orderBy("createdAt", "desc"),
+        );
+        const streakSnap = await getDocs(streakQuery);
+        const allActivities = streakSnap.docs.map((d) => ({
+          createdAt: d.data().createdAt?.toDate() || new Date(),
+        }));
+
         let currentStreak = 0;
         let checkDate = new Date();
-        checkDate.setHours(0,0,0,0);
-        
-        const uniqueDates = new Set(activities.map(a => {
+        checkDate.setHours(0, 0, 0, 0);
+
+        const uniqueDates = new Set(allActivities.map((a) => {
           const d = new Date(a.createdAt);
-          d.setHours(0,0,0,0);
+          d.setHours(0, 0, 0, 0);
           return d.getTime();
         }));
-        
+
         while (uniqueDates.has(checkDate.getTime())) {
           currentStreak++;
           checkDate.setDate(checkDate.getDate() - 1);

@@ -416,8 +416,8 @@ export default function DeadlineReverse() {
           {!result && !loading && (
             <div className="flex-1 flex flex-col items-center justify-center bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant border-dashed p-12 text-center h-full min-h-[400px]">
               <span className="material-symbols-outlined text-[64px] text-primary/30 mb-4">event_note</span>
-              <h3 className="font-headline-md text-headline-md text-on-surface mb-2">Ready to Reverse Engineer</h3>
-              <p className="font-body-md text-body-md text-on-surface-variant max-w-sm">Enter your exam details and topics on the left to generate an optimized, day-by-day study protocol.</p>
+              <h3 className="w-full font-headline-md text-headline-md text-on-surface mb-2">Ready to Reverse Engineer</h3>
+              <p className="w-full max-w-sm mx-auto font-body-md text-body-md text-on-surface-variant">Enter your exam details and topics on the left to generate an optimized, day-by-day study protocol.</p>
             </div>
           )}
           

@@ -7,7 +7,8 @@ export async function callGemini(
   const fullPrompt = options.languageInstruction 
     ? prompt + options.languageInstruction 
     : prompt;
-  const response = await fetch("/api/gemini/generate", {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "";
+  const response = await fetch(`${BACKEND_URL}/api/gemini/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -34,7 +35,8 @@ export async function callGeminiWithFile(
   const fullPrompt = options.languageInstruction 
     ? prompt + options.languageInstruction 
     : prompt;
-  const response = await fetch("/api/gemini/multimodal", {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "";
+  const response = await fetch(`${BACKEND_URL}/api/gemini/multimodal`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -59,7 +61,8 @@ export async function callGeminiChat(history: any[], newMessage: string) {
     ...history,
     { role: "user", parts: [{ text: newMessage }] }
   ];
-  const response = await fetch("/api/gemini/chat", {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "";
+  const response = await fetch(`${BACKEND_URL}/api/gemini/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ history: fullHistory }),

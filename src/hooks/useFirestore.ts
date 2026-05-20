@@ -4,6 +4,7 @@ import {
   addDoc,
   updateDoc,
   doc,
+  getDoc,
   increment,
   serverTimestamp,
   query,
@@ -99,8 +100,11 @@ export async function addHistoryEntry(collectionName: string, data: any) {
     // Add to specific collection
     const docRef = await addDoc(collection(db, collectionName), entry);
 
-    // Also add to unified history for dashboard
-    await addDoc(collection(db, "history"), entry);
+    // Only write to unified history if not already writing to it directly,
+    // to prevent accidental double-writes.
+    if (collectionName !== "history") {
+      await addDoc(collection(db, "history"), entry);
+    }
 
     return docRef.id;
   } catch (error) {
@@ -138,23 +142,36 @@ export async function updateFlashcardRepetition(docId: string, rating: number) {
   try {
     const cardRef = doc(db, "flashcards", docId);
 
-    // Simple SM-2 like logic
+    // Read the card's current SM-2 state from Firestore
+    const cardSnap = await getDoc(cardRef);
+    const cardData = cardSnap.exists() ? cardSnap.data() : {};
+    const prevInterval: number = cardData.interval ?? 1;
+    const prevFactor: number = cardData.factor ?? 2.5;
+
+    // SM-2 algorithm carrying forward previous interval and factor.
     // Rating: 0 = Forgot, 1 = Hard, 2 = Good, 3 = Easy
-    let interval = 1;
-    let factor = 2.5;
+    let interval: number;
+    let factor: number;
 
     if (rating === 0) {
+      // Forgot — reset interval, reduce factor (min 1.3)
       interval = 1;
-      factor = 2.0;
-    } else if (rating === 1) {
-      interval = 3;
-      factor = 2.2;
-    } else if (rating === 2) {
-      interval = 7;
-      factor = 2.5;
+      factor = Math.max(1.3, prevFactor - 0.2);
     } else {
-      interval = 14;
-      factor = 2.8;
+      // Recalled — apply SM-2 factor adjustment
+      // q = 3 (Hard), 4 (Good), 5 (Easy) mapped from rating 1, 2, 3
+      const q = rating + 2; // 1→3, 2→4, 3→5
+      factor = Math.max(1.3, prevFactor + 0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+
+      if (prevInterval <= 1) {
+        interval = 1;
+      } else if (prevInterval === 1) {
+        interval = 6;
+      } else {
+        interval = Math.round(prevInterval * factor);
+      }
+      // Enforce minimum progression
+      interval = Math.max(interval, prevInterval + 1);
     }
 
     const nextReview = new Date();
@@ -177,11 +194,14 @@ export function useHistory(collectionName: string, limitCount = 10) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth.currentUser) return;
+    // Read uid into a local variable so it is stable in the closure
+    // and can be safely used in the dependency array (Fix 7).
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
 
     const q = query(
       collection(db, collectionName),
-      where("uid", "==", auth.currentUser.uid),
+      where("uid", "==", uid),
       orderBy("createdAt", "desc"),
       limit(limitCount),
     );

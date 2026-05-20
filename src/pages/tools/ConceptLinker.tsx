@@ -318,10 +318,10 @@ Return ONLY valid JSON.`;
         {/* Graph Simulation Area */}
         <div className="flex-1 relative overflow-hidden flex flex-col items-center justify-center">
           {!result && !loading && (
-             <div className="text-center p-8 max-w-md bg-surface-container-lowest/80 backdrop-blur-sm rounded-2xl border border-outline-variant shadow-sm">
+             <div className="text-center p-8 w-full max-w-md mx-auto bg-surface-container-lowest/80 backdrop-blur-sm rounded-2xl border border-outline-variant shadow-sm">
                 <span className="material-symbols-outlined text-5xl text-primary mb-4" style={{ fontVariationSettings: "'FILL' 1" }}>account_tree</span>
-                <h2 className="font-headline-sm text-headline-sm text-on-surface mb-2">Build Your Knowledge Map</h2>
-                <p className="font-body-sm text-body-sm text-on-surface-variant">Add at least 2 topics above to generate a neural visualization of how they connect.</p>
+                <h2 className="w-full font-headline-sm text-headline-sm text-on-surface mb-2">Build Your Knowledge Map</h2>
+                <p className="w-full font-body-sm text-body-sm text-on-surface-variant">Add at least 2 topics above to generate a neural visualization of how they connect.</p>
              </div>
           )}
           

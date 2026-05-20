@@ -65,6 +65,13 @@ export default function SnapSolve() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+      if (file.size > MAX_SIZE_BYTES) {
+        setError("File too large. Please upload an image under 10MB.");
+        // Reset the input so the same file can be re-selected after resizing
+        e.target.value = "";
+        return;
+      }
       const reader = new FileReader();
       reader.onload = () => {
         setCapturedImage(reader.result as string);
