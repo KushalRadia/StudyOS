@@ -3,7 +3,7 @@ import { callGemini, parseGeminiJson } from "../../services/geminiService";
 import { saveToolUsage, addHistoryEntry } from "../../hooks/useFirestore";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { cn } from "../../lib/utils";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../../hooks/useLanguage";
 import VoiceInput from "../../components/VoiceInput";
 import ShareCard from "../../components/ShareCard";
@@ -29,26 +29,52 @@ export default function FiveMinuteExplainer() {
     setResult(null);
     setSaved(false);
 
+    let mustKnowDesc = "";
+    let goodToKnowDesc = "";
+    let skipDesc = "";
+    let summaryDesc = "";
+
+    if (minutes === 2) {
+      mustKnowDesc = "Generate 4-5 core, high-priority, absolute essential points (up to 25 words each) that are highly likely to be tested.";
+      goodToKnowDesc = "Generate 3 supporting, context-rich points (up to 20 words each) if time allows.";
+      skipDesc = "Generate 2 interesting but non-essential details (up to 15 words each) that can be safely skipped for now.";
+      summaryDesc = "A concise, memorable one-sentence summary (up to 25 words) to act as a mental anchor.";
+    } else if (minutes === 5) {
+      mustKnowDesc = "Generate 6-8 comprehensive, moderately detailed points (up to 45 words each) explaining key concepts, mechanisms, and main arguments.";
+      goodToKnowDesc = "Generate 4-5 useful supporting points, examples, or applications (up to 35 words each) to deepen understanding.";
+      skipDesc = "Generate 3 advanced or peripheral points (up to 25 words each) that are not critical for a 5-minute review.";
+      summaryDesc = "A clear, well-structured one-sentence summary (up to 35 words) that captures the core essence of the topic.";
+    } else { // 10 minutes
+      mustKnowDesc = "Generate 10-12 highly detailed, deeply comprehensive points (up to 75 words each) covering complex mechanisms, formulas, logical structures, step-by-step explanations, and key nuances.";
+      goodToKnowDesc = "Generate 6-8 detailed supporting points, extensions, and context (up to 60 words each) to provide a rich academic foundation.";
+      skipDesc = "Generate 4 low-priority, highly specific details or trivia (up to 40 words each) that can be ignored during high-yield preparation.";
+      summaryDesc = "A comprehensive, high-level, multi-clause one-sentence summary (up to 50 words) encapsulating the entire topic.";
+    }
+
     const prompt = `You are a smart exam tutor. A student has exactly ${minutes} minutes before their exam.
 Topic: "${topic}"
 
 Return a JSON object with exactly this structure:
 {
-  "mustKnow": ["point 1", "point 2", "point 3"],
-  "goodToKnow": ["point 1", "point 2"],
-  "skip": ["point 1", "point 2"],
+  "mustKnow": ["point 1", "point 2", ...],
+  "goodToKnow": ["point 1", "point 2", ...],
+  "skip": ["point 1", "point 2", ...],
   "oneSentenceSummary": "..."
 }
 
-mustKnow: 3-4 absolute essentials that will definitely be tested.
-goodToKnow: 2-3 supporting points if time allows.
-skip: 2 things that are interesting but not worth studying now.
-oneSentenceSummary: one sentence the student can memorise as an anchor.
-Keep every point under 15 words. Be ruthless about what matters.
+mustKnow: ${mustKnowDesc}
+goodToKnow: ${goodToKnowDesc}
+skip: ${skipDesc}
+oneSentenceSummary: ${summaryDesc}
+
+CRITICAL: The JSON keys ("mustKnow", "goodToKnow", "skip", "oneSentenceSummary") MUST remain exactly as specified in English. Do NOT translate the keys. Only translate the text values inside the JSON.
 Return ONLY the JSON. No markdown, no backticks.`;
 
     try {
-      const text = await callGemini(prompt, { languageInstruction });
+      const text = await callGemini(prompt, { 
+        languageInstruction,
+        config: { responseMimeType: "application/json" }
+      });
       const parsed = parseGeminiJson(text);
       setResult(parsed);
       await saveToolUsage("explainer");

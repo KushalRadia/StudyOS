@@ -23,7 +23,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../hooks/useAuth";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function CollaborationHub() {
   const [sessions, setSessions] = useState<any[]>([]);

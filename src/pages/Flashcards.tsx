@@ -21,7 +21,7 @@ import {
 import { callGemini, parseGeminiJson } from "../services/geminiService";
 import { cn } from "../lib/utils";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../hooks/useLanguage";
 import VoiceInput from "../components/VoiceInput";
 
@@ -106,17 +106,76 @@ export default function Flashcards() {
       const prompt = `Generate 5 high-quality flashcards for the topic: "${topic}".
       Focus on key definitions, core concepts, and potential exam questions.
       
-      Return ONLY this JSON:
+      Return a JSON object with this structure:
       {
         "cards": [
           { "front": "question or term", "back": "short, clear answer or definition" }
         ]
       }
-      Return ONLY valid JSON.`;
+      
+      CRITICAL: The JSON keys ("cards", "front", "back") MUST remain exactly as specified in English. Do NOT translate the keys. Only translate the text values inside the JSON.`;
 
-      const text = await callGemini(prompt, { languageInstruction });
-      const { cards } = parseGeminiJson(text);
-      await createFlashcardSet(topic, cards);
+      const text = await callGemini(prompt, { 
+        languageInstruction,
+        config: { responseMimeType: "application/json" }
+      });
+      
+      const parsed = parseGeminiJson(text);
+      let cardsArray: any[] = [];
+      if (parsed && typeof parsed === "object") {
+        if (Array.isArray(parsed)) {
+          cardsArray = parsed;
+        } else if (Array.isArray(parsed.cards)) {
+          cardsArray = parsed.cards;
+        } else if (Array.isArray(parsed.flashcards)) {
+          cardsArray = parsed.flashcards;
+        } else {
+          const possibleArray = Object.values(parsed).find((val) => Array.isArray(val));
+          if (possibleArray) {
+            cardsArray = possibleArray as any[];
+          }
+        }
+      }
+
+      if (!cardsArray || cardsArray.length === 0) {
+        throw new Error("No flashcards found in the response.");
+      }
+
+      const formattedCards = cardsArray.map((card: any) => {
+        if (!card || typeof card !== "object") return null;
+        
+        let front = "";
+        let back = "";
+        
+        // Scan keys to find best match case-insensitively and language-adaptively
+        const keys = Object.keys(card);
+        
+        // Find front key
+        const frontKey = keys.find(k => {
+          const lk = k.toLowerCase();
+          return lk === "front" || lk === "question" || lk === "q" || lk === "term" || lk === "concept" || lk === "सामने" || lk === "प्रश्न";
+        }) || keys[0];
+        
+        // Find back key (excluding the front key)
+        const backKey = keys.find(k => {
+          const lk = k.toLowerCase();
+          return k !== frontKey && (lk === "back" || lk === "answer" || lk === "a" || lk === "definition" || lk === "explanation" || lk === "पीछे" || lk === "उत्तर");
+        }) || keys[1];
+        
+        if (frontKey) front = String(card[frontKey] || "");
+        if (backKey) back = String(card[backKey] || "");
+        
+        return {
+          front: front.substring(0, 1000).trim(),
+          back: back.substring(0, 2000).trim(),
+        };
+      }).filter(c => c && c.front && c.back);
+
+      if (formattedCards.length === 0) {
+        throw new Error("Failed to format any valid flashcards.");
+      }
+
+      await createFlashcardSet(topic.substring(0, 200), formattedCards);
       setTopic("");
     } catch (error) {
       console.error(error);

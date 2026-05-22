@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
-import { db, auth } from "../firebase/config";
+import { db } from "../firebase/config";
+import { useAuth } from "./useAuth";
 
 export const SUPPORTED_LANGUAGES = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -23,6 +24,7 @@ export function getLanguageInstruction(code: string): string {
 }
 
 export function useLanguage() {
+  const { user } = useAuth();
   const [language, setLanguageState] = useState(() => {
     return localStorage.getItem("studyos_language") || "en";
   });
@@ -30,10 +32,10 @@ export function useLanguage() {
   const setLanguage = async (code: string) => {
     setLanguageState(code);
     localStorage.setItem("studyos_language", code);
-    // Also save to Firestore
-    if (auth.currentUser) {
+    // Also save to Firestore (skip for dev-bypass users)
+    if (user && user.uid !== "dev-user-123") {
       try {
-        await updateDoc(doc(db, "users", auth.currentUser.uid), {
+        await updateDoc(doc(db, "users", user.uid), {
           preferredLanguage: code
         });
       } catch (e) {
@@ -42,12 +44,12 @@ export function useLanguage() {
     }
   };
 
-  // Load from Firestore on mount
+  // Load from Firestore on mount (skip for dev-bypass users)
   useEffect(() => {
-    if (!auth.currentUser) return;
+    if (!user || user.uid === "dev-user-123") return;
     const loadLang = async () => {
       try {
-        const userDoc = await getDoc(doc(db, "users", auth.currentUser!.uid));
+        const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists() && userDoc.data().preferredLanguage) {
           const saved = userDoc.data().preferredLanguage;
           setLanguageState(saved);
@@ -58,7 +60,7 @@ export function useLanguage() {
       }
     };
     loadLang();
-  }, [auth.currentUser?.uid]);
+  }, [user?.uid]);
 
   const languageInstruction = getLanguageInstruction(language);
   const currentLanguage = SUPPORTED_LANGUAGES.find(l => l.code === language) || SUPPORTED_LANGUAGES[0];

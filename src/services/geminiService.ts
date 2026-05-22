@@ -2,7 +2,7 @@
 
 export async function callGemini(
   prompt: string,
-  options: { model?: string; languageInstruction?: string } = {},
+  options: { model?: string; languageInstruction?: string; config?: any } = {},
 ) {
   const fullPrompt = options.languageInstruction 
     ? prompt + options.languageInstruction 
@@ -14,6 +14,7 @@ export async function callGemini(
     body: JSON.stringify({
       prompt: fullPrompt,
       model: options.model || "gemini-2.5-flash",
+      config: options.config,
     }),
   });
 
@@ -30,7 +31,7 @@ export async function callGeminiWithFile(
   prompt: string,
   fileData: string,
   mimeType: string,
-  options: { model?: string; languageInstruction?: string } = {},
+  options: { model?: string; languageInstruction?: string; config?: any } = {},
 ) {
   const fullPrompt = options.languageInstruction 
     ? prompt + options.languageInstruction 
@@ -44,6 +45,7 @@ export async function callGeminiWithFile(
       fileData,
       mimeType,
       model: options.model || "gemini-2.5-flash",
+      config: options.config,
     }),
   });
 
@@ -88,11 +90,47 @@ export function fileToBase64(file: File | Blob): Promise<string> {
 }
 
 export function parseGeminiJson(text: string) {
+  if (!text) {
+    throw new Error("Empty response from AI");
+  }
+  
+  // 1. Try standard direct parsing
   try {
-    const cleaned = text.replace(/```json|```/g, "").trim();
-    return JSON.parse(cleaned);
-  } catch (error) {
-    console.error("Failed to parse Gemini JSON:", text);
-    throw new Error("Invalid response format from AI");
+    return JSON.parse(text);
+  } catch {
+    // 2. Try removing markdown markers
+    try {
+      const cleaned = text.replace(/```json|```/g, "").trim();
+      return JSON.parse(cleaned);
+    } catch {
+      // 3. Robust substring extraction (find first '{' or '[' and match to last '}' or ']')
+      const firstCurly = text.indexOf("{");
+      const lastCurly = text.lastIndexOf("}");
+      const firstSquare = text.indexOf("[");
+      const lastSquare = text.lastIndexOf("]");
+      
+      let start = -1;
+      let end = -1;
+      
+      if (firstCurly !== -1 && (firstSquare === -1 || firstCurly < firstSquare)) {
+        start = firstCurly;
+        end = lastCurly;
+      } else if (firstSquare !== -1) {
+        start = firstSquare;
+        end = lastSquare;
+      }
+      
+      if (start !== -1 && end !== -1 && end > start) {
+        try {
+          const jsonSubstring = text.substring(start, end + 1);
+          return JSON.parse(jsonSubstring);
+        } catch (subError) {
+          console.error("Failed parsing extracted JSON substring:", text, subError);
+        }
+      }
+      
+      console.error("Failed to parse Gemini JSON:", text);
+      throw new Error("Invalid response format from AI");
+    }
   }
 }

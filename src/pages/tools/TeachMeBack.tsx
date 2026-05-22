@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { callGeminiChat, parseGeminiJson } from "../../services/geminiService";
 import { saveToolUsage, addHistoryEntry } from "../../hooks/useFirestore";
 import { cn } from "../../lib/utils";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../../hooks/useLanguage";
 import VoiceInput from "../../components/VoiceInput";
 import ShareCard from "../../components/ShareCard";
@@ -87,7 +87,7 @@ ${languageInstruction}`;
     setError(null);
 
     try {
-      const responseText = await callGeminiChat(updatedHistory, input);
+      const responseText = await callGeminiChat(history, input);
 
       if (round < 5) {
         setHistory([
@@ -226,7 +226,7 @@ ${languageInstruction}`;
                           {msg.role === "user" ? "person" : "smart_toy"}
                         </span>
                       </div>
-                      <div className={cn("rounded-2xl p-4 shadow-sm", msg.role === "user" ? "bg-primary-container text-white" : "bg-surface-container-low text-on-surface")}>
+                      <div className={cn("rounded-2xl p-4 shadow-sm", msg.role === "user" ? "bg-primary-container text-on-primary-container" : "bg-surface-container-low text-on-surface")}>
                         <p className="font-body-md text-body-md">{msg.parts[0].text}</p>
                       </div>
                     </motion.div>

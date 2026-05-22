@@ -3,7 +3,7 @@ import { callGemini, parseGeminiJson } from "../../services/geminiService";
 import { saveToolUsage, addHistoryEntry } from "../../hooks/useFirestore";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { cn } from "../../lib/utils";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../../hooks/useLanguage";
 import VoiceInput from "../../components/VoiceInput";
 import ShareCard from "../../components/ShareCard";
@@ -213,7 +213,7 @@ Return ONLY valid JSON.`;
                         Reinforcement Practice
                       </h4>
                     </div>
-                    <div className="bg-white p-4 rounded-lg border border-outline-variant mb-4">
+                    <div className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant mb-4">
                       <p className="text-body-md font-medium text-on-surface">{result.practiceQuestion}</p>
                     </div>
                   </section>

@@ -22,6 +22,7 @@ import History from "./pages/History";
 import PanicMode from "./pages/PanicMode";
 import ExamAutopsy from "./pages/tools/ExamAutopsy";
 import StudyDNA from "./pages/StudyDNA";
+import Settings from "./pages/Settings";
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -226,6 +227,17 @@ function AppContent() {
               <ProtectedRoute>
                 <Layout>
                   <StudyDNA />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Settings />
                 </Layout>
               </ProtectedRoute>
             }

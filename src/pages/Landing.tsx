@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import {
   Loader2, Brain, Zap, PenTool, MessagesSquare, Calendar, FileText,
   Mic, XOctagon, Share2, Users, Layers, ArrowRight, ChevronDown,

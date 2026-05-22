@@ -100,6 +100,49 @@
   --max-width-7xl: 80rem;
 }
 
+.dark {
+  --color-background: #0d0f17;
+  --color-on-background: #e3e2ec;
+  --color-surface: #12131a;
+  --color-on-surface: #e3e2ec;
+  --color-surface-bright: #38393f;
+  --color-surface-dim: #12131a;
+  --color-surface-variant: #45464f;
+  --color-on-surface-variant: #c5c6d0;
+  --color-surface-container-lowest: #0d0e14;
+  --color-surface-container-low: #1b1b22;
+  --color-surface-container: #1f1f26;
+  --color-surface-container-high: #292a30;
+  --color-surface-container-highest: #34343b;
+  --color-outline: #8f9099;
+  --color-outline-variant: #34343b;
+  
+  --color-primary: #bec2ff;
+  --color-on-primary: #1b228b;
+  --color-primary-container: #333ba3;
+  --color-on-primary-container: #e0e0ff;
+  
+  --color-secondary: #84d8a5;
+  --color-on-secondary: #003823;
+  --color-secondary-container: #005235;
+  --color-on-secondary-container: #a0f4c0;
+  
+  --color-tertiary: #ffba5c;
+  --color-on-tertiary: #4c2c00;
+  --color-tertiary-container: #6b4000;
+  --color-on-tertiary-container: #ffddb4;
+  
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+}
+
+.dark .glass-card {
+  background: rgba(18, 19, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 @layer base {
   body {
     @apply bg-background text-on-background font-sans;
@@ -128,6 +171,18 @@
 
   .card {
     @apply bg-surface-container-lowest p-6 rounded-xl shadow-sm hover:shadow-md border border-outline-variant transition-all;
+  }
+
+  .badge {
+    @apply px-2.5 py-0.5 rounded-full text-xs font-bold inline-flex items-center gap-1;
+  }
+
+  .badge-primary {
+    @apply bg-primary-container text-on-primary-container;
+  }
+
+  .badge-error {
+    @apply bg-error-container text-on-error-container;
   }
 }
 

@@ -13,6 +13,7 @@ const sidebarTools = [
   { name: "Digest", icon: "audio_file", path: "/tools/lecturedigest" },
   { name: "Diagnose", icon: "error_outline", path: "/tools/whyamiwrong" },
   { name: "Mapper", icon: "account_tree", path: "/tools/conceptlinker" },
+  { name: "Flashcards", icon: "layers", path: "/flashcards" },
   { name: "Collab Hub", icon: "groups", path: "/hub" },
   { name: "Exam Autopsy", icon: "biotech", path: "/tools/exam-autopsy" },
   { name: "Study DNA", icon: "genetics", path: "/study-dna" },
@@ -20,7 +21,7 @@ const sidebarTools = [
 
 export default function Sidebar() {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, profile } = useAuth();
 
   return (
     <aside className="hidden lg:flex flex-col h-[calc(100vh-64px)] w-64 fixed left-0 top-16 border-r border-outline-variant dark:border-outline bg-surface-container-lowest dark:bg-surface-container-low shadow-md overflow-y-auto z-40 transition-colors duration-300">
@@ -76,9 +77,19 @@ export default function Sidebar() {
         </nav>
 
         <div className="mt-8 px-4">
-          <button className="w-full bg-primary text-on-primary py-3 rounded-xl font-label-md text-label-md font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95">
-            Upgrade to Pro
-          </button>
+          {profile?.isPro ? (
+            <div className="w-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-on-primary text-center py-3 rounded-xl font-label-md text-label-md font-bold shadow-lg shadow-amber-500/25 border border-amber-300/30 flex items-center justify-center gap-1.5 animate-pulse">
+              <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
+              <span>Pro Scholar</span>
+            </div>
+          ) : (
+            <Link
+              to="/settings?tab=billing&upgrade=true"
+              className="block w-full bg-primary text-on-primary text-center py-3 rounded-xl font-label-md text-label-md font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95"
+            >
+              Upgrade to Pro
+            </Link>
+          )}
         </div>
       </div>
 

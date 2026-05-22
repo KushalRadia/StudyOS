@@ -7,7 +7,7 @@ import {
 import { saveToolUsage, addHistoryEntry } from "../../hooks/useFirestore";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { cn } from "../../lib/utils";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../../hooks/useLanguage";
 import ShareCard from "../../components/ShareCard";
 import Markdown from "react-markdown";
@@ -158,7 +158,7 @@ Return ONLY valid JSON. No extra text.`;
                 onClick={() => setMode("record")}
                 className={cn(
                   "px-6 py-2 rounded-md font-label-md text-label-md transition-all",
-                  mode === "record" ? "bg-white shadow-sm text-primary font-bold" : "text-on-surface-variant hover:text-on-surface"
+                  mode === "record" ? "bg-surface-container-lowest shadow-sm text-primary font-bold" : "text-on-surface-variant hover:text-on-surface"
                 )}
               >
                 Record Live
@@ -167,7 +167,7 @@ Return ONLY valid JSON. No extra text.`;
                 onClick={() => setMode("upload")}
                 className={cn(
                   "px-6 py-2 rounded-md font-label-md text-label-md transition-all",
-                  mode === "upload" ? "bg-white shadow-sm text-primary font-bold" : "text-on-surface-variant hover:text-on-surface"
+                  mode === "upload" ? "bg-surface-container-lowest shadow-sm text-primary font-bold" : "text-on-surface-variant hover:text-on-surface"
                 )}
               >
                 Upload Recording
@@ -276,7 +276,7 @@ Return ONLY valid JSON. No extra text.`;
                       "w-full flex items-center justify-center gap-2 py-3 rounded-lg font-label-md text-label-md transition-all shadow-sm border",
                       saved
                         ? "bg-secondary/10 text-secondary border-secondary/20 cursor-default"
-                        : "bg-white text-on-surface border-outline-variant hover:bg-surface-container-lowest"
+                        : "bg-surface-container-lowest text-on-surface border-outline-variant hover:bg-surface-container-low"
                     )}
                   >
                     <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>

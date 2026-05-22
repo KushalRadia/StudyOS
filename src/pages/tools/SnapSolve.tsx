@@ -153,45 +153,45 @@ Analyze the image. Return ONLY this JSON:
       
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center">
-          <Camera className="w-8 h-8 text-teal-500" />
+        <div className="w-16 h-16 bg-primary-container/10 rounded-2xl flex items-center justify-center">
+          <Camera className="w-8 h-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-text-primary tracking-tight">Snap & Solve</h1>
-          <p className="text-text-secondary mt-1">Point. Capture. Understand.</p>
+          <h1 className="text-3xl font-bold text-on-surface tracking-tight">Snap & Solve</h1>
+          <p className="text-on-surface-variant mt-1">Point. Capture. Understand.</p>
         </div>
       </div>
 
       {error && (
-        <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 text-sm text-danger flex items-center gap-2">
+        <div className="bg-error-container/10 border border-error/20 rounded-xl p-4 text-sm text-error flex items-center gap-2">
           <XOctagon size={16} /> {error}
         </div>
       )}
 
       {/* Input Section */}
       {!result && !loading && (
-        <div className="card space-y-6">
+        <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant p-6 space-y-6">
           
-          <div className="flex p-1 bg-surface-container rounded-lg">
+          <div className="flex p-1 bg-surface-container rounded-lg border border-outline-variant/30">
             <button 
               onClick={() => { setTab("camera"); if(!capturedImage) startCamera(); }}
-              className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${tab === "camera" ? "bg-white text-primary shadow-sm" : "text-text-secondary hover:bg-white/50"}`}
+              className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${tab === "camera" ? "bg-surface-container-lowest text-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-container-high"}`}
             >
               📷 Camera
             </button>
             <button 
               onClick={() => { setTab("upload"); streamRef?.getTracks().forEach(t => t.stop()); setCameraActive(false); }}
-              className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${tab === "upload" ? "bg-white text-primary shadow-sm" : "text-text-secondary hover:bg-white/50"}`}
+              className={`flex-1 py-2 text-sm font-semibold rounded-md transition-all ${tab === "upload" ? "bg-surface-container-lowest text-primary shadow-sm" : "text-on-surface-variant hover:bg-surface-container-high"}`}
             >
               🖼️ Upload Image
             </button>
           </div>
 
-          <div className="bg-bg rounded-xl overflow-hidden relative" style={{ minHeight: '300px' }}>
+          <div className="bg-surface-container-low rounded-xl overflow-hidden relative" style={{ minHeight: '300px' }}>
             {capturedImage ? (
               <div className="relative">
                 <img src={capturedImage} alt="Captured" className="w-full h-auto max-h-[60vh] object-contain bg-black/5" />
-                <button onClick={reset} className="absolute top-4 right-4 bg-white/90 text-text-primary px-4 py-2 rounded-lg font-bold text-sm shadow-md flex items-center gap-2 hover:bg-white transition-colors">
+                <button onClick={reset} className="absolute top-4 right-4 bg-surface-container-lowest/90 text-on-surface px-4 py-2 rounded-lg font-bold text-sm shadow-md flex items-center gap-2 hover:bg-surface-container-lowest transition-colors">
                   <RefreshCcw size={16} /> Retake
                 </button>
               </div>
@@ -210,13 +210,13 @@ Analyze the image. Return ONLY this JSON:
                 )}
               </div>
             ) : (
-              <label className="w-full h-[300px] border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-white/50 hover:border-primary transition-all group">
+              <label className="w-full h-[300px] border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-surface-container-high hover:border-primary transition-all group">
                 <div className="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                  <ImageIcon size={32} className="text-text-secondary group-hover:text-primary transition-colors" />
+                  <ImageIcon size={32} className="text-on-surface-variant group-hover:text-primary transition-colors" />
                 </div>
                 <div className="text-center">
-                  <p className="font-bold text-text-primary text-lg">Upload an image</p>
-                  <p className="text-sm text-text-muted mt-1">PNG, JPG up to 10MB</p>
+                  <p className="font-bold text-on-surface text-lg">Upload an image</p>
+                  <p className="text-sm text-on-surface-variant mt-1">PNG, JPG up to 10MB</p>
                 </div>
                 <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
               </label>
@@ -224,21 +224,21 @@ Analyze the image. Return ONLY this JSON:
           </div>
 
           {capturedImage && (
-            <div className="space-y-4 pt-4 border-t border-border">
+            <div className="space-y-4 pt-4 border-t border-outline-variant">
               <div>
-                <label className="block text-sm font-bold text-text-primary mb-2">Your answer (optional — for mistake diagnosis)</label>
+                <label className="block text-sm font-bold text-on-surface mb-2">Your answer (optional — for mistake diagnosis)</label>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
                     value={userAnswer} 
                     onChange={e => setUserAnswer(e.target.value)}
                     placeholder="What did you think the answer was? Leave blank for a clean solve."
-                    className="flex-1 p-3 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all"
+                    className="flex-1 p-3 bg-surface-container-low border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all"
                   />
                   <VoiceInput onTranscript={(text) => setUserAnswer(prev => prev ? prev + " " + text : text)} />
                 </div>
               </div>
-              <button onClick={solveQuestion} disabled={loading} className="btn-primary w-full py-4 text-lg flex items-center justify-center gap-2">
+              <button onClick={solveQuestion} disabled={loading} className="w-full py-4 text-lg flex items-center justify-center gap-2 bg-primary text-on-primary rounded-xl font-bold shadow-lg hover:opacity-90 active:scale-95 transition-all disabled:opacity-50">
                 <CheckCircle size={20} /> Solve This Question
               </button>
             </div>
@@ -251,32 +251,32 @@ Analyze the image. Return ONLY this JSON:
       {/* Result Section */}
       {result && (
         <div className="space-y-6">
-          <div className="bg-surface-container p-6 rounded-xl border border-border">
-            <div className="flex items-center gap-2 mb-2 text-text-secondary font-bold text-sm">
+          <div className="bg-surface-container-low p-6 rounded-xl border border-outline-variant">
+            <div className="flex items-center gap-2 mb-2 text-on-surface-variant font-bold text-sm">
               <Camera size={16} /> Question Detected from Image
             </div>
-            <p className="text-text-primary font-medium">{result.question}</p>
+            <p className="text-on-surface font-medium">{result.question}</p>
           </div>
 
-          <div className="card space-y-6">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant p-6 space-y-6">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-xl font-bold text-text-primary flex items-center gap-2">
-                  <CheckCircle className="text-success" size={24} /> Complete Solution
+                <h3 className="text-xl font-bold text-on-surface flex items-center gap-2">
+                  <CheckCircle className="text-secondary" size={24} /> Complete Solution
                 </h3>
-                <span className="badge badge-purple mt-2 inline-block">{result.subject}</span>
+                <span className="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-xs font-bold mt-2 inline-block">{result.subject}</span>
               </div>
             </div>
             
-            <div className="whitespace-pre-wrap text-text-secondary leading-relaxed bg-bg p-6 rounded-xl border border-border font-medium">
+            <div className="whitespace-pre-wrap text-on-surface-variant leading-relaxed bg-surface-container-low p-6 rounded-xl border border-outline-variant font-medium">
               {result.correctAnswer}
             </div>
             
             <div>
-              <h4 className="font-bold text-text-primary mb-4 text-lg">Step-by-Step Breakdown</h4>
+              <h4 className="font-bold text-on-surface mb-4 text-lg">Step-by-Step Breakdown</h4>
               <ul className="space-y-3">
                 {result.keySteps.map((step, idx) => (
-                  <li key={idx} className="flex gap-3 text-text-secondary">
+                  <li key={idx} className="flex gap-3 text-on-surface-variant">
                     <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 mt-0.5">
                       {idx + 1}
                     </span>
@@ -288,37 +288,37 @@ Analyze the image. Return ONLY this JSON:
           </div>
 
           {result.mistakeAnalysis && (
-            <div className="card border-danger-light bg-rose-50/30">
-              <h3 className="text-xl font-bold text-danger mb-6 flex items-center gap-2">
+            <div className="bg-surface-container-lowest rounded-2xl shadow-sm border-2 border-error/20 p-6">
+              <h3 className="text-xl font-bold text-error mb-6 flex items-center gap-2">
                 <XOctagon size={24} /> Mistake Diagnosis
               </h3>
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="bg-white p-5 rounded-xl border border-rose-100 shadow-sm">
-                  <div className="text-danger font-bold text-sm uppercase tracking-wider mb-2">What went wrong</div>
-                  <p className="text-text-secondary">{result.mistakeAnalysis.whatWentWrong}</p>
+                <div className="bg-surface-container-low p-5 rounded-xl border border-error/20 shadow-sm">
+                  <div className="text-error font-bold text-sm uppercase tracking-wider mb-2">What went wrong</div>
+                  <p className="text-on-surface-variant">{result.mistakeAnalysis.whatWentWrong}</p>
                 </div>
-                <div className="bg-white p-5 rounded-xl border border-orange-100 shadow-sm">
-                  <div className="text-warning font-bold text-sm uppercase tracking-wider mb-2">Knowledge Gap</div>
-                  <p className="text-text-secondary">{result.mistakeAnalysis.gapIdentified}</p>
+                <div className="bg-surface-container-low p-5 rounded-xl border border-tertiary/20 shadow-sm">
+                  <div className="text-tertiary font-bold text-sm uppercase tracking-wider mb-2">Knowledge Gap</div>
+                  <p className="text-on-surface-variant">{result.mistakeAnalysis.gapIdentified}</p>
                 </div>
-                <div className="bg-white p-5 rounded-xl border border-emerald-100 shadow-sm">
-                  <div className="text-success font-bold text-sm uppercase tracking-wider mb-2">How to fix it</div>
-                  <p className="text-text-secondary">{result.mistakeAnalysis.howToFix}</p>
+                <div className="bg-surface-container-low p-5 rounded-xl border border-secondary/20 shadow-sm">
+                  <div className="text-secondary font-bold text-sm uppercase tracking-wider mb-2">How to fix it</div>
+                  <p className="text-on-surface-variant">{result.mistakeAnalysis.howToFix}</p>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="card border-primary">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-sm border-2 border-primary/20 p-6">
             <h4 className="font-bold text-primary mb-3 text-lg flex items-center gap-2">
               <CheckCircle size={20} /> Try a Similar Question
             </h4>
-            <p className="text-text-secondary italic bg-primary/5 p-4 rounded-lg">
+            <p className="text-on-surface-variant italic bg-primary-container/10 p-4 rounded-lg">
               {result.similarQuestion}
             </p>
           </div>
 
-          <button onClick={reset} className="btn-secondary w-full py-4 text-lg flex items-center justify-center gap-2">
+          <button onClick={reset} className="w-full py-4 text-lg flex items-center justify-center gap-2 bg-surface-container-high text-on-surface rounded-xl font-bold border border-outline-variant hover:bg-surface-container-highest active:scale-95 transition-all">
             <RefreshCcw size={20} /> Try Another Question
           </button>
         </div>

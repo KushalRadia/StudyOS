@@ -24,4 +24,4 @@ services:
       - key: VITE_FIREBASE_APP_ID
         sync: false
       - key: VITE_BACKEND_URL
-        sync: false   # Set to your Render service URL e.g. https://studyos.onrender.com
+        sync: false

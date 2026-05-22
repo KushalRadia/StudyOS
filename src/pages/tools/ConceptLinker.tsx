@@ -4,7 +4,7 @@ import { callGemini, parseGeminiJson } from "../../services/geminiService";
 import { saveToolUsage, addHistoryEntry } from "../../hooks/useFirestore";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { cn } from "../../lib/utils";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../../hooks/useLanguage";
 import VoiceInput from "../../components/VoiceInput";
 import ShareCard from "../../components/ShareCard";
@@ -216,7 +216,7 @@ Return ONLY valid JSON.`;
       .each(function (d: any) {
         // Simple text wrapping logic
         const el = d3.select(this);
-        const words = d.label.split(/\\s+/);
+        const words = d.label.split(/\s+/);
         el.text("");
         if (words.length > 2) {
           el.append("tspan").text(words.slice(0, 2).join(" ")).attr("x", 0).attr("y", -6);

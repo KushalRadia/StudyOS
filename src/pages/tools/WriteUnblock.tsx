@@ -2,7 +2,7 @@ import { useState } from "react";
 import { callGemini, parseGeminiJson } from "../../services/geminiService";
 import { saveToolUsage, addHistoryEntry } from "../../hooks/useFirestore";
 import LoadingSpinner from "../../components/LoadingSpinner";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../../hooks/useLanguage";
 import VoiceInput from "../../components/VoiceInput";
 

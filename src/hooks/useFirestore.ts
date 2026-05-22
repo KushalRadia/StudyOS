@@ -15,6 +15,36 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { db, auth } from "../firebase/config";
+import { useAuth } from "./useAuth";
+
+const isDevBypass = () => {
+  return !auth.currentUser && localStorage.getItem("studyos_dev_uid") === "dev-user-123";
+};
+
+const getMockData = (collectionName: string): any[] => {
+  const dbStr = localStorage.getItem("studyos_mock_firestore");
+  if (!dbStr) return [];
+  try {
+    const mockDb = JSON.parse(dbStr);
+    return mockDb[collectionName] || [];
+  } catch {
+    return [];
+  }
+};
+
+const saveMockData = (collectionName: string, items: any[]) => {
+  const dbStr = localStorage.getItem("studyos_mock_firestore");
+  let mockDb: any = {};
+  if (dbStr) {
+    try {
+      mockDb = JSON.parse(dbStr);
+    } catch {
+      mockDb = {};
+    }
+  }
+  mockDb[collectionName] = items;
+  localStorage.setItem("studyos_mock_firestore", JSON.stringify(mockDb));
+};
 
 export enum OperationType {
   CREATE = "create",
@@ -59,6 +89,20 @@ export async function deleteHistoryEntry(
   collectionName: string,
   docId: string,
 ) {
+  if (isDevBypass()) {
+    const items = getMockData(collectionName);
+    const updated = items.filter((item) => item.id !== docId);
+    saveMockData(collectionName, updated);
+
+    if (collectionName !== "history") {
+      const histItems = getMockData("history");
+      const updatedHist = histItems.filter((item) => item.id !== docId);
+      saveMockData("history", updatedHist);
+    }
+    window.dispatchEvent(new Event("studyos_db_update"));
+    return;
+  }
+
   if (!auth.currentUser) return;
   try {
     await deleteDoc(doc(db, collectionName, docId));
@@ -72,7 +116,15 @@ export async function deleteHistoryEntry(
 }
 
 export async function saveToolUsage(toolName: string) {
-  if (!auth.currentUser) return;
+  if (isDevBypass()) {
+    console.debug(`[Dev Bypass] saveToolUsage: ${toolName}`);
+    return;
+  }
+  if (!auth.currentUser) {
+    // Dev-bypass: silently skip Firestore write
+    console.debug(`[Dev] saveToolUsage skipped for: ${toolName}`);
+    return;
+  }
   const userRef = doc(db, "users", auth.currentUser.uid);
   try {
     await updateDoc(userRef, {
@@ -88,7 +140,34 @@ export async function saveToolUsage(toolName: string) {
 }
 
 export async function addHistoryEntry(collectionName: string, data: any) {
-  if (!auth.currentUser) return;
+  if (isDevBypass()) {
+    const entry = {
+      ...data,
+      id: Math.random().toString(36).substring(2, 9),
+      uid: "dev-user-123",
+      createdAt: new Date().toISOString(),
+      toolCollection: collectionName,
+    };
+
+    const items = getMockData(collectionName);
+    items.unshift(entry);
+    saveMockData(collectionName, items);
+
+    if (collectionName !== "history") {
+      const histItems = getMockData("history");
+      histItems.unshift(entry);
+      saveMockData("history", histItems);
+    }
+
+    window.dispatchEvent(new Event("studyos_db_update"));
+    return entry.id;
+  }
+
+  if (!auth.currentUser) {
+    // Dev-bypass: silently skip Firestore write
+    console.debug(`[Dev] addHistoryEntry skipped for: ${collectionName}`);
+    return;
+  }
   try {
     const entry = {
       ...data,
@@ -116,6 +195,26 @@ export async function createFlashcardSet(
   title: string,
   cards: { front: string; back: string }[],
 ) {
+  const safeTitle = title.substring(0, 200);
+  if (isDevBypass()) {
+    const flashcards = getMockData("flashcards");
+    const newCards = cards.map((card) => ({
+      ...card,
+      id: Math.random().toString(36).substring(2, 9),
+      uid: "dev-user-123",
+      title: safeTitle,
+      status: "new",
+      interval: 0,
+      factor: 2.5,
+      nextReview: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    }));
+    flashcards.push(...newCards);
+    saveMockData("flashcards", flashcards);
+    window.dispatchEvent(new Event("studyos_db_update"));
+    return;
+  }
+
   if (!auth.currentUser) return;
   const uid = auth.currentUser.uid;
   try {
@@ -123,7 +222,7 @@ export async function createFlashcardSet(
       addDoc(collection(db, "flashcards"), {
         ...card,
         uid,
-        title,
+        title: safeTitle,
         status: "new",
         interval: 0,
         factor: 2.5,
@@ -138,6 +237,52 @@ export async function createFlashcardSet(
 }
 
 export async function updateFlashcardRepetition(docId: string, rating: number) {
+  if (isDevBypass()) {
+    const flashcards = getMockData("flashcards");
+    const cardIndex = flashcards.findIndex((c) => c.id === docId);
+    if (cardIndex === -1) return;
+
+    const cardData = flashcards[cardIndex];
+    const prevInterval: number = cardData.interval ?? 0;
+    const prevFactor: number = cardData.factor ?? 2.5;
+
+    let interval: number;
+    let factor: number;
+
+    if (rating === 0) {
+      interval = 1;
+      factor = Math.max(1.3, prevFactor - 0.2);
+    } else {
+      const q = rating + 2;
+      factor = Math.max(1.3, prevFactor + 0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+
+      if (prevInterval === 0) {
+        interval = 1;
+      } else if (prevInterval <= 1) {
+        interval = 6;
+      } else {
+        interval = Math.round(prevInterval * factor);
+      }
+      interval = Math.max(interval, prevInterval + 1);
+    }
+
+    const nextReview = new Date();
+    nextReview.setDate(nextReview.getDate() + interval);
+
+    flashcards[cardIndex] = {
+      ...cardData,
+      interval,
+      factor,
+      nextReview: nextReview.toISOString(),
+      lastReviewed: new Date().toISOString(),
+      status: rating === 0 ? "learning" : "reviewing",
+    };
+
+    saveMockData("flashcards", flashcards);
+    window.dispatchEvent(new Event("studyos_db_update"));
+    return;
+  }
+
   if (!auth.currentUser) return;
   try {
     const cardRef = doc(db, "flashcards", docId);
@@ -145,7 +290,7 @@ export async function updateFlashcardRepetition(docId: string, rating: number) {
     // Read the card's current SM-2 state from Firestore
     const cardSnap = await getDoc(cardRef);
     const cardData = cardSnap.exists() ? cardSnap.data() : {};
-    const prevInterval: number = cardData.interval ?? 1;
+    const prevInterval: number = cardData.interval ?? 0;
     const prevFactor: number = cardData.factor ?? 2.5;
 
     // SM-2 algorithm carrying forward previous interval and factor.
@@ -163,9 +308,9 @@ export async function updateFlashcardRepetition(docId: string, rating: number) {
       const q = rating + 2; // 1→3, 2→4, 3→5
       factor = Math.max(1.3, prevFactor + 0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
 
-      if (prevInterval <= 1) {
+      if (prevInterval === 0) {
         interval = 1;
-      } else if (prevInterval === 1) {
+      } else if (prevInterval <= 1) {
         interval = 6;
       } else {
         interval = Math.round(prevInterval * factor);
@@ -190,13 +335,29 @@ export async function updateFlashcardRepetition(docId: string, rating: number) {
 }
 
 export function useHistory(collectionName: string, limitCount = 10) {
+  const { user } = useAuth();
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isDevBypass()) {
+      const loadLocalData = () => {
+        const items = getMockData(collectionName);
+        setData(items.slice(0, limitCount));
+        setLoading(false);
+      };
+
+      loadLocalData();
+
+      window.addEventListener("studyos_db_update", loadLocalData);
+      return () => {
+        window.removeEventListener("studyos_db_update", loadLocalData);
+      };
+    }
+
     // Read uid into a local variable so it is stable in the closure
     // and can be safely used in the dependency array (Fix 7).
-    const uid = auth.currentUser?.uid;
+    const uid = user?.uid;
     if (!uid) return;
 
     const q = query(
@@ -222,7 +383,7 @@ export function useHistory(collectionName: string, limitCount = 10) {
     );
 
     return () => unsubscribe();
-  }, [collectionName, limitCount, auth.currentUser?.uid]);
+  }, [collectionName, limitCount, user?.uid]);
 
   return { data, loading };
 }

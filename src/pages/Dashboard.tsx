@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth, db } from "../hooks/useAuth";
 import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 
@@ -20,6 +20,7 @@ const tools: ToolDef[] = [
   { id: "lecturedigest", title: "Digest", description: "Summarize long lectures & PDF's.", icon: "audio_file", path: "/tools/lecturedigest" },
   { id: "whyamiwrong", title: "Diagnose", description: "Identify gaps in your knowledge.", icon: "error_outline", path: "/tools/whyamiwrong" },
   { id: "conceptlinker", title: "Mapper", description: "Visualize connections between ideas.", icon: "account_tree", path: "/tools/conceptlinker" },
+  { id: "flashcards", title: "Flashcards", description: "Optimize your memory with AI-powered spaced repetition.", icon: "layers", path: "/flashcards" },
   { id: "snapsolve", title: "Snap & Solve", description: "Photo any question and get an instant AI solution.", icon: "photo_camera", path: "/tools/snapsolve" },
   { id: "hub", title: "Collab Hub", description: "Study live with peers and expert AI.", icon: "groups", path: "/hub" },
   { id: "examautopsy", title: "Exam Autopsy", description: "Full cognitive post-mortem of your mistakes.", icon: "biotech", path: "/tools/exam-autopsy" },
@@ -27,13 +28,23 @@ const tools: ToolDef[] = [
 ];
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const [toolUsage, setToolUsage] = useState<Record<string, number>>({});
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     if (!user) return;
+
+    // Dev-bypass user has no Firestore data — use profile from context
+    if (user.uid === "dev-user-123") {
+      setToolUsage(profile?.toolUsage || {});
+      setRecentActivity([]);
+      setStreak(0);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -89,7 +100,7 @@ export default function Dashboard() {
       }
     };
     fetchData();
-  }, [user]);
+  }, [user, profile]);
 
   return (
     <div className="space-y-lg">
@@ -209,11 +220,27 @@ export default function Dashboard() {
           {/* Contextual Promo/Tip */}
           <div className="bg-tertiary-container text-on-tertiary-container p-lg rounded-2xl relative overflow-hidden">
             <div className="relative z-10">
-              <h4 className="font-headline-sm text-headline-sm mb-xs">Pro Tip</h4>
-              <p className="font-body-sm text-body-sm opacity-90">Connect your Google Calendar to sync your exam dates automatically with the Planner.</p>
-              <button className="mt-md bg-white text-tertiary px-4 py-2 rounded-lg font-label-md text-label-md">Connect Now</button>
+              <h4 className="font-headline-sm text-headline-sm mb-xs">Google Calendar Integration</h4>
+              <p className="font-body-sm text-body-sm opacity-90">
+                {profile?.googleCalendarSynced
+                  ? "Your Google Calendar is connected. Study schedules will automatically sync with your calendar."
+                  : "Connect your Google Calendar to sync your exam dates automatically with the Planner."}
+              </p>
+              {profile?.googleCalendarSynced ? (
+                <div className="mt-md inline-flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-lg font-label-md text-label-md font-bold">
+                  <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                  <span>Connected</span>
+                </div>
+              ) : (
+                <button
+                  onClick={() => navigate("/settings?tab=integrations")}
+                  className="mt-md bg-white text-tertiary px-4 py-2 rounded-lg font-label-md text-label-md font-bold hover:scale-95 transition-all shadow-sm cursor-pointer"
+                >
+                  Connect Now
+                </button>
+              )}
             </div>
-            <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 rotate-12" style={{ fontVariationSettings: "'FILL' 1" }}>lightbulb</span>
+            <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 rotate-12" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_today</span>
           </div>
         </aside>
       </div>

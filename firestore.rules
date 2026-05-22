@@ -43,7 +43,7 @@ service cloud.firestore {
       allow get: if isOwner(userId);
       allow create: if isOwner(userId) && isValidUser(request.resource.data);
       allow update: if isOwner(userId) &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photoURL', 'toolUsage']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'photoURL', 'toolUsage', 'preferredLanguage', 'isPro', 'googleCalendarSynced', 'theme']);
     }
 
     // 2. Tools History Collections (Shared patterns)
