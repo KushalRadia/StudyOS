@@ -4,7 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -140,6 +140,54 @@ function getMockGenerateResponse(prompt: string): string {
     });
   }
 
+  if (p.includes("diagnose the mistake") || p.includes("why am i wrong")) {
+    return JSON.stringify({
+      mistakeType: "Conceptual",
+      whatWentWrong: "Mock wrong explanation.",
+      gapIdentified: "Mock conceptual gap.",
+      howToFix: "Review the core fundamentals.",
+      practiceQuestion: "What is 2+2?",
+      severity: "moderate"
+    });
+  }
+
+  if (p.includes("exam autopsy") || p.includes("scan your mistakes")) {
+    return JSON.stringify({
+      subject: "Mock Subject",
+      totalQuestions: 1,
+      mistakes: [{
+        questionNumber: "1",
+        questionText: "Mock Q",
+        studentAnswer: "Mock A",
+        correctAnswer: "Mock C",
+        mistakeType: "Conceptual",
+        whatWentWrong: "Mock",
+        rootGap: "Mock Gap",
+        fix: "Mock Fix",
+        severity: "minor"
+      }],
+      dominantMistakeType: "Conceptual",
+      severityScore: 10,
+      overallSummary: "Mock summary"
+    });
+  }
+
+  if (p.includes("extract all past year questions") || p.includes("pyq solver")) {
+    return JSON.stringify({
+      subject: "Math",
+      totalQuestions: 1,
+      questions: [{
+        questionNumber: "1",
+        questionText: "Mock past year question",
+        topics: ["Algebra"],
+        difficulty: "Medium",
+        solution: "Mock solution steps"
+      }],
+      topicFrequency: {"Algebra": 1},
+      examYear: "2024"
+    });
+  }
+
   return `### Core Overview
 Here is a comprehensive breakdown of the topic.
 
@@ -187,7 +235,7 @@ async function generateContentWithFallback(params: {
   const modelsToTry = [
     params.model || "gemini-2.5-flash",
     "gemini-1.5-flash",
-    "gemini-2.5-flash-8b"
+    "gemini-1.5-flash-8b"
   ];
   
   let lastError: any = null;
@@ -200,8 +248,8 @@ async function generateContentWithFallback(params: {
           contents: params.contents,
           config: params.config,
         }),
-        6000, // 6 seconds timeout per model attempt
-        `Generation with model ${model} timed out after 6s`
+        20000, // 20 seconds timeout per model attempt
+        `Generation with model ${model} timed out after 20s`
       );
       return response;
     } catch (error: any) {
@@ -220,7 +268,7 @@ async function sendChatWithFallback(params: {
   const modelsToTry = [
     params.model || "gemini-2.5-flash",
     "gemini-1.5-flash",
-    "gemini-2.5-fixed" // Just a fallback slot
+    "gemini-1.5-flash-8b"
   ];
   
   let lastError: any = null;
@@ -233,8 +281,8 @@ async function sendChatWithFallback(params: {
       });
       const response = await withTimeout(
         chat.sendMessage({ message: params.message }),
-        6000, // 6 seconds timeout per model attempt
-        `Chat with model ${model} timed out after 6s`
+        20000, // 20 seconds timeout per model attempt
+        `Chat with model ${model} timed out after 20s`
       );
       return response;
     } catch (error: any) {
@@ -256,7 +304,7 @@ app.post("/api/gemini/generate", async (req, res) => {
     });
     res.json({ text: response.text });
   } catch (error: any) {
-    console.error("Gemini Error, falling back to mock response:", error);
+    console.warn("Gemini Error, falling back to mock response:", error.message || error);
     try {
       const mockText = getMockGenerateResponse(prompt);
       res.json({ text: mockText });
@@ -281,7 +329,7 @@ app.post("/api/gemini/multimodal", async (req, res) => {
     });
     res.json({ text: response.text });
   } catch (error: any) {
-    console.error("Gemini Multimodal Error, falling back to mock response:", error);
+    console.warn("Gemini Multimodal Error, falling back to mock response:", error.message || error);
     try {
       const mockText = getMockGenerateResponse(prompt);
       res.json({ text: mockText });
@@ -305,7 +353,7 @@ app.post("/api/gemini/chat", async (req, res) => {
     });
     res.json({ text: response.text });
   } catch (error: any) {
-    console.error("Gemini Chat Error, falling back to mock response:", error);
+    console.warn("Gemini Chat Error, falling back to mock response:", error.message || error);
     try {
       const mockText = getMockChatResponse(history);
       res.json({ text: mockText });

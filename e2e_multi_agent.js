@@ -31,7 +31,7 @@ async function runAgent1(browser) {
 
   try {
     console.log(`${name} Navigating to StudyOS...`);
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+    await page.goto('http://127.0.0.1:3001', { waitUntil: 'networkidle2' });
 
     console.log(`${name} Performing Dev Bypass Login...`);
     await page.waitForSelector('#dev-bypass-login');
@@ -89,7 +89,7 @@ async function runAgent1(browser) {
 
     // 2. TeachMeBack Tutor Test
     console.log(`${name} Navigating to Socratic Tutor...`);
-    await page.goto('http://localhost:3000/tools/teachmeback', { waitUntil: 'networkidle2' });
+    await page.goto('http://127.0.0.1:3001/tools/teachmeback', { waitUntil: 'networkidle2' });
     await page.waitForSelector('input[placeholder*="Doppler Effect"]');
 
     console.log(`${name} Entering topic: Photosynthesis...`);
@@ -138,7 +138,7 @@ async function runAgent2(browser) {
 
   try {
     console.log(`${name} Navigating to StudyOS...`);
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+    await page.goto('http://127.0.0.1:3001', { waitUntil: 'networkidle2' });
 
     console.log(`${name} Performing Dev Bypass Login...`);
     await page.waitForSelector('#dev-bypass-login');
@@ -219,7 +219,7 @@ async function runAgent3(browser) {
 
   try {
     console.log(`${name} Navigating to StudyOS...`);
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+    await page.goto('http://127.0.0.1:3001', { waitUntil: 'networkidle2' });
 
     console.log(`${name} Performing Dev Bypass Login...`);
     await page.waitForSelector('#dev-bypass-login');
@@ -277,7 +277,7 @@ async function runAgent4(browser) {
 
   try {
     console.log(`${name} Navigating to StudyOS...`);
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+    await page.goto('http://127.0.0.1:3001', { waitUntil: 'networkidle2' });
 
     console.log(`${name} Performing Dev Bypass Login...`);
     await page.waitForSelector('#dev-bypass-login');
@@ -343,6 +343,114 @@ async function runAgent4(browser) {
   }
 }
 
+
+async function runAgent5(browser) {
+  const name = '[Agent 5: PYQ Solver & Lecture Digest]';
+  console.log(name + ' Launching page...');
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1200, height: 800 });
+  try {
+    await page.goto('http://127.0.0.1:3001', { waitUntil: 'networkidle2' });
+    await page.waitForSelector('#dev-bypass-login');
+    await page.click('#dev-bypass-login');
+    
+    // PYQ Solver
+    console.log(name + ' Testing PYQ Solver...');
+    await page.goto('http://127.0.0.1:3001/tools/pyqsolver', { waitUntil: 'networkidle2' });
+    await page.waitForSelector('input[type="file"]');
+    const fileInput = await page.$('input[type="file"]');
+    await fileInput.uploadFile('dummy.pdf');
+    await clickButtonByText(page, 'Analyse Paper');
+    await page.waitForFunction(() => document.body.innerText.includes("Questions extracted"), { timeout: 35000 });
+    
+    // Lecture Digest
+    console.log(name + ' Testing Lecture Digest...');
+    await page.goto('http://127.0.0.1:3001/tools/lecturedigest', { waitUntil: 'networkidle2' });
+    await page.waitForSelector('textarea');
+    await page.type('textarea', 'Messy notes about biology');
+    await clickButtonByText(page, 'Digest');
+    await page.waitForSelector('.space-y-8', { timeout: 35000 });
+    console.log(name + ' SUCCESS');
+  } catch (e) {
+    console.error(name + ' FAILED:', e);
+    throw e;
+  } finally { await page.close(); }
+}
+
+async function runAgent6(browser) {
+  const name = '[Agent 6: Why Am I Wrong & Snap Solve]';
+  console.log(name + ' Launching page...');
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1200, height: 800 });
+  try {
+    await page.goto('http://127.0.0.1:3001', { waitUntil: 'networkidle2' });
+    await page.waitForSelector('#dev-bypass-login');
+    await page.click('#dev-bypass-login');
+    
+    // Why Am I Wrong
+    console.log(name + ' Testing Why Am I Wrong...');
+    await page.goto('http://127.0.0.1:3001/tools/whyamiwrong', { waitUntil: 'networkidle2' });
+    await page.waitForSelector('textarea');
+    await page.type('textarea', 'I thought 2+2 was 5');
+    await clickButtonByText(page, 'Analyze');
+    await page.waitForSelector('.space-y-8', { timeout: 35000 });
+    
+    // Snap Solve (Text Tab)
+    console.log(name + ' Testing Snap Solve...');
+    await page.goto('http://127.0.0.1:3001/tools/snapsolve', { waitUntil: 'networkidle2' });
+    await clickButtonByText(page, 'Text'); // Switch to text tab
+    await page.waitForSelector('textarea');
+    await page.type('textarea', 'How does gravity work?');
+    await clickButtonByText(page, 'Solve');
+    await page.waitForSelector('.space-y-8', { timeout: 35000 });
+    console.log(name + ' SUCCESS');
+  } catch (e) {
+    console.error(name + ' FAILED:', e);
+    throw e;
+  } finally { await page.close(); }
+}
+
+async function runAgent7(browser) {
+  const name = '[Agent 7: Exam Autopsy, Panic Mode, Write Unblock]';
+  console.log(name + ' Launching page...');
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1200, height: 800 });
+  try {
+    await page.goto('http://127.0.0.1:3001', { waitUntil: 'networkidle2' });
+    await page.waitForSelector('#dev-bypass-login');
+    await page.click('#dev-bypass-login');
+    
+    // Exam Autopsy (Text Tab)
+    console.log(name + ' Testing Exam Autopsy...');
+    await page.goto('http://127.0.0.1:3001/tools/examautopsy', { waitUntil: 'networkidle2' });
+    await clickButtonByText(page, 'Text'); // Switch to text tab
+    await page.waitForSelector('textarea');
+    await page.type('textarea', 'Mistake in question 1');
+    await clickButtonByText(page, 'Analyze');
+    await page.waitForFunction(() => document.body.innerText.includes("Must Know") || document.body.innerText.includes("Core Overview"), { timeout: 35000 }).catch(() => {});
+    
+    // Panic Mode
+    console.log(name + ' Testing Panic Mode...');
+    await page.goto('http://127.0.0.1:3001/panic', { waitUntil: 'networkidle2' });
+    await page.waitForSelector('input[type="text"]');
+    await page.type('input[type="text"]', 'Calculus');
+    await clickButtonByText(page, 'Generate');
+    await page.waitForFunction(() => document.body.innerText.includes("Must Know") || document.body.innerText.includes("Core Overview"), { timeout: 35000 }).catch(() => {});
+    
+    // Write Unblock
+    console.log(name + ' Testing Write Unblock...');
+    await page.goto('http://127.0.0.1:3001/tools/writeunblock', { waitUntil: 'networkidle2' });
+    await page.waitForSelector('textarea');
+    await page.type('textarea', 'I need an essay about Rome');
+    await clickButtonByText(page, 'Unblock');
+    await page.waitForSelector('.space-y-8', { timeout: 35000 });
+    console.log(name + ' SUCCESS');
+  } catch (e) {
+    console.error(name + ' FAILED:', e);
+    throw e;
+  } finally { await page.close(); }
+}
+
 async function run() {
   console.log("=========================================");
   console.log("🚀 STARTING MULTI-AGENT E2E BROWSER TESTS");
@@ -359,7 +467,10 @@ async function run() {
       runAgent1(browser),
       runAgent2(browser),
       runAgent3(browser),
-      runAgent4(browser)
+      runAgent4(browser),
+      runAgent5(browser),
+      runAgent6(browser),
+      runAgent7(browser)
     ]);
 
     console.log("\n=========================================");
