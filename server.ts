@@ -56,6 +56,23 @@ function getMockGenerateResponse(prompt: string): string {
     });
   }
 
+  if (p.includes("emergency study mode") || p.includes("panic mode") || p.includes("hours before their")) {
+    return JSON.stringify({
+      sessionPlan: [
+        { time: "0:00–0:45", activity: "Review highest yield concepts and core formulas", type: "study" },
+        { time: "0:45–0:55", activity: "Short break — hydrate and stretch", type: "break" }
+      ],
+      likelyQuestions: [
+        { question: "What is the primary mechanism discussed in this topic?", probability: "High", topic: "Fundamentals" },
+        { question: "How do you apply the main formula to a novel scenario?", probability: "Medium", topic: "Applications" }
+      ],
+      cheatSheet: [
+        { topic: "Fundamentals", facts: ["Core equation is X = Y + Z", "Always check your units", "Remember the right-hand rule"] },
+        { topic: "Applications", facts: ["Use edge case limits to verify", "Draw a free body diagram"] }
+      ]
+    });
+  }
+
   if (p.includes("study plan") || p.includes("deadline") || p.includes("study planner") || p.includes("roadmap")) {
     return JSON.stringify({
       totalDays: 5,

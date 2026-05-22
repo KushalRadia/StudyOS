@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Clock, Download, RefreshCcw, Save, CheckCircle } from "lucide-react";
-import { callGemini } from "../services/geminiService";
+import { callGemini, parseGeminiJson } from "../services/geminiService";
 import { saveToolUsage, addHistoryEntry } from "../hooks/useFirestore";
 import { useLanguage } from "../hooks/useLanguage";
 import VoiceInput from "../components/VoiceInput";
@@ -73,7 +73,7 @@ Rules:
 Return ONLY valid JSON. No markdown. No backticks.`;
 
       const text = await callGemini(prompt, { languageInstruction });
-      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+      const parsed = parseGeminiJson(text);
       setPanicResult(parsed);
     } catch (err: any) {
       setError("Failed to activate panic mode. Try again.");
