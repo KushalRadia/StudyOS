@@ -8,9 +8,13 @@ coverage/
 .env
 .env.local
 .env.production
+.env.*.local
+firebase-applet-config.json
+*.env.json
 
 # Keep .env.example
 !.env.example
 
 # Firebase cache
 .firebase/
+.firebaserc

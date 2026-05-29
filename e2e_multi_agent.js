@@ -366,10 +366,16 @@ async function runAgent5(browser) {
     // Lecture Digest
     console.log(name + ' Testing Lecture Digest...');
     await page.goto('http://127.0.0.1:3001/tools/lecturedigest', { waitUntil: 'networkidle2' });
-    await page.waitForSelector('textarea');
-    await page.type('textarea', 'Messy notes about biology');
-    await clickButtonByText(page, 'Digest');
-    await page.waitForSelector('.space-y-8', { timeout: 35000 });
+    // Switch to Upload Recording tab
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const uploadBtn = buttons.find(b => b.textContent.includes('Upload Recording'));
+      if (uploadBtn) uploadBtn.click();
+    });
+    await page.waitForSelector('input[type="file"]');
+    const digestFileInput = await page.$('input[type="file"]');
+    await digestFileInput.uploadFile('dummy.pdf');
+    await page.waitForSelector('.gap-lg', { timeout: 35000 });
     console.log(name + ' SUCCESS');
   } catch (e) {
     console.error(name + ' FAILED:', e);
@@ -391,18 +397,27 @@ async function runAgent6(browser) {
     console.log(name + ' Testing Why Am I Wrong...');
     await page.goto('http://127.0.0.1:3001/tools/whyamiwrong', { waitUntil: 'networkidle2' });
     await page.waitForSelector('textarea');
-    await page.type('textarea', 'I thought 2+2 was 5');
-    await clickButtonByText(page, 'Analyze');
+    const textareas = await page.$$('textarea');
+    if (textareas.length >= 3) {
+      await textareas[0].type('Solve for x: 2(x + 5) = 14');
+      await textareas[1].type('x = 5');
+      await textareas[2].type('x = 2');
+    } else {
+      await page.type('textarea', 'I thought 2+2 was 5');
+    }
+    await clickButtonByText(page, 'Diagnose My Mistake');
     await page.waitForSelector('.space-y-8', { timeout: 35000 });
     
-    // Snap Solve (Text Tab)
+    // Snap Solve (Upload mode)
     console.log(name + ' Testing Snap Solve...');
     await page.goto('http://127.0.0.1:3001/tools/snapsolve', { waitUntil: 'networkidle2' });
-    await clickButtonByText(page, 'Text'); // Switch to text tab
-    await page.waitForSelector('textarea');
-    await page.type('textarea', 'How does gravity work?');
-    await clickButtonByText(page, 'Solve');
-    await page.waitForSelector('.space-y-8', { timeout: 35000 });
+    await clickButtonByText(page, 'Upload Image');
+    await page.waitForSelector('input[type="file"]');
+    const snapFileInput = await page.$('input[type="file"]');
+    await snapFileInput.uploadFile('dummy.pdf');
+    await page.waitForSelector('button:has-text("Solve This Question")', { timeout: 5000 }).catch(() => {});
+    await clickButtonByText(page, 'Solve This Question');
+    await page.waitForSelector('.space-y-6', { timeout: 35000 });
     console.log(name + ' SUCCESS');
   } catch (e) {
     console.error(name + ' FAILED:', e);
@@ -415,6 +430,12 @@ async function runAgent7(browser) {
   console.log(name + ' Launching page...');
   const page = await browser.newPage();
   await page.setViewport({ width: 1200, height: 800 });
+  page.on('console', msg => {
+    console.log(`${name} [Page Console ${msg.type()}]:`, msg.text());
+  });
+  page.on('pageerror', err => {
+    console.error(`${name} [Page Exception]:`, err.message || err);
+  });
   try {
     await page.goto('http://127.0.0.1:3001', { waitUntil: 'networkidle2' });
     await page.waitForSelector('#dev-bypass-login');
@@ -422,28 +443,33 @@ async function runAgent7(browser) {
     
     // Exam Autopsy (Text Tab)
     console.log(name + ' Testing Exam Autopsy...');
-    await page.goto('http://127.0.0.1:3001/tools/examautopsy', { waitUntil: 'networkidle2' });
-    await clickButtonByText(page, 'Text'); // Switch to text tab
+    await page.goto('http://127.0.0.1:3001/tools/exam-autopsy', { waitUntil: 'networkidle2' });
+    // Switch to Type Answers tab
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const typeBtn = buttons.find(b => b.textContent.includes('Type Answers'));
+      if (typeBtn) typeBtn.click();
+    });
     await page.waitForSelector('textarea');
-    await page.type('textarea', 'Mistake in question 1');
-    await clickButtonByText(page, 'Analyze');
-    await page.waitForFunction(() => document.body.innerText.includes("Must Know") || document.body.innerText.includes("Core Overview"), { timeout: 35000 }).catch(() => {});
+    await page.type('textarea', 'Q1: x = 5 | Correct: x = 2');
+    await clickButtonByText(page, 'Run Autopsy');
+    await page.waitForSelector('.grid.grid-cols-1.lg\\:grid-cols-12.gap-6', { timeout: 35000 });
     
     // Panic Mode
     console.log(name + ' Testing Panic Mode...');
     await page.goto('http://127.0.0.1:3001/panic', { waitUntil: 'networkidle2' });
     await page.waitForSelector('input[type="text"]');
     await page.type('input[type="text"]', 'Calculus');
-    await clickButtonByText(page, 'Generate');
-    await page.waitForFunction(() => document.body.innerText.includes("Must Know") || document.body.innerText.includes("Core Overview"), { timeout: 35000 }).catch(() => {});
+    await clickButtonByText(page, 'Activate Panic Mode');
+    await page.waitForFunction(() => document.body.innerText.includes("likely to appear") || document.body.innerText.includes("Cheat Sheet"), { timeout: 35000 });
     
     // Write Unblock
     console.log(name + ' Testing Write Unblock...');
     await page.goto('http://127.0.0.1:3001/tools/writeunblock', { waitUntil: 'networkidle2' });
     await page.waitForSelector('textarea');
     await page.type('textarea', 'I need an essay about Rome');
-    await clickButtonByText(page, 'Unblock');
-    await page.waitForSelector('.space-y-8', { timeout: 35000 });
+    await clickButtonByText(page, 'Unblock Me');
+    await page.waitForSelector('.border-l-4', { timeout: 35000 });
     console.log(name + ' SUCCESS');
   } catch (e) {
     console.error(name + ' FAILED:', e);

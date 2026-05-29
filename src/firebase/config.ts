@@ -2,22 +2,20 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, doc, getDocFromServer } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import backupConfig from "../../firebase-applet-config.json";
-
 const metaEnv = (import.meta as any).env || {};
 
 if (!metaEnv.VITE_FIREBASE_API_KEY) {
-  console.warn('Using backup Firebase config from firebase-applet-config.json. Set VITE_FIREBASE_* variables in .env for production.');
+  console.warn('⚠️ Firebase credentials not configured. Set VITE_FIREBASE_* variables in .env file.');
 }
 
 const firebaseConfig = {
-  apiKey: metaEnv.VITE_FIREBASE_API_KEY || backupConfig.apiKey,
-  authDomain: metaEnv.VITE_FIREBASE_AUTH_DOMAIN || backupConfig.authDomain,
-  projectId: metaEnv.VITE_FIREBASE_PROJECT_ID || backupConfig.projectId,
-  storageBucket: metaEnv.VITE_FIREBASE_STORAGE_BUCKET || backupConfig.storageBucket,
-  messagingSenderId: metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || backupConfig.messagingSenderId,
-  appId: metaEnv.VITE_FIREBASE_APP_ID || backupConfig.appId,
-  firestoreDatabaseId: metaEnv.VITE_FIREBASE_FIRESTORE_DATABASE_ID || backupConfig.firestoreDatabaseId || "(default)",
+  apiKey: metaEnv.VITE_FIREBASE_API_KEY || "",
+  authDomain: metaEnv.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: metaEnv.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: metaEnv.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: metaEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: metaEnv.VITE_FIREBASE_APP_ID || "",
+  firestoreDatabaseId: metaEnv.VITE_FIREBASE_FIRESTORE_DATABASE_ID || "(default)",
 };
 
 const app = initializeApp(firebaseConfig);

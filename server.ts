@@ -37,6 +37,96 @@ app.use((req, res, next) => {
 function getMockGenerateResponse(prompt: string): string {
   const p = prompt.toLowerCase();
   
+  if (p.includes("extract every question") || p.includes("pyqsolver") || p.includes("pyq solver")) {
+    return JSON.stringify({
+      subject: "JEE Advanced Physics",
+      examYear: "2025",
+      totalQuestions: 1,
+      questions: [
+        {
+          number: "Q1",
+          question: "A block of mass m is placed on a rough wedge of inclination theta. Calculate the minimum coefficient of static friction to prevent slipping.",
+          marks: 5,
+          topic: "Mechanics",
+          modelAnswer: "For the block to remain stationary: mg*sin(theta) = f <= mu*N. Since N = mg*cos(theta), mg*sin(theta) <= mu*mg*cos(theta). Dividing both sides gives mu >= tan(theta). Thus, the minimum coefficient of static friction is tan(theta).",
+          keyTerms: ["friction", "equilibrium", "coefficient of static friction"],
+          likelyToRepeat: true,
+          repeatReason: "Wedge friction problems are highly fundamental and repeat annually in varying configurations."
+        }
+      ]
+    });
+  }
+
+  if (p.includes("digest this lecture") || p.includes("lecturedigest") || p.includes("lecture digest")) {
+    return JSON.stringify({
+      detectedSubject: "Neurobiology",
+      keyConcepts: [
+        { concept: "Synaptic Plasticity", explanation: "The ability of synapses to strengthen or weaken over time in response to increases or decreases in their activity." }
+      ],
+      structuredNotes: "### Overview of Synaptic Plasticity\n\n- Synaptic plasticity is critical for learning and memory formation.\n- It involves long-term potentiation (LTP) and long-term depression (LTD).\n\n### LTP Mechanisms\n- High frequency stimulation leads to increased calcium influx via NMDA receptors.\n- This recruits additional AMPA receptors to the postsynaptic membrane.",
+      examWatch: [
+        "The distinction between AMPA and NMDA receptor activation pathways is a common exam essay topic."
+      ],
+      summary: "This lecture covers the fundamental molecular mechanisms of synaptic plasticity, highlighting LTP and LTD pathways."
+    });
+  }
+
+  if (p.includes("photographed this question") || p.includes("snapsolve") || p.includes("snap & solve")) {
+    return JSON.stringify({
+      question: "What is the force required to accelerate a 5kg mass at 3m/s^2?",
+      correctAnswer: "Using Newton's Second Law: F = m * a. Given m = 5kg and a = 3m/s^2, F = 5kg * 3m/s^2 = 15 Newtons.",
+      keySteps: [
+        "Identify the formula to use: Newton's Second Law, F = ma",
+        "Substitute the given mass (5kg) and acceleration (3m/s^2)",
+        "Calculate the final product to get 15 Newtons"
+      ],
+      subject: "Newtonian Physics",
+      mistakeAnalysis: {
+        whatWentWrong: "You multiplied the mass and acceleration incorrectly or used the wrong formula.",
+        gapIdentified: "Newton's Second Law formula application",
+        howToFix: "Memorize F = ma and practice simple multiplication steps."
+      },
+      similarQuestion: "Calculate the force on a 10kg object accelerating at 2m/s^2."
+    });
+  }
+
+  if (p.includes("exam post-mortem") || p.includes("examautopsy") || p.includes("exam autopsy")) {
+    return JSON.stringify({
+      subject: "Mathematics",
+      totalQuestions: 1,
+      mistakes: [
+        {
+          questionNumber: "Q1",
+          questionText: "Solve for x: 2(x + 5) = 14",
+          studentAnswer: "x = 5",
+          correctAnswer: "x = 2",
+          mistakeType: "Calculation",
+          whatWentWrong: "The student expanded 2(x + 5) as 2x + 5 instead of 2x + 10.",
+          rootGap: "Distributive Property",
+          fix: "Remember to distribute the outer term to ALL terms inside the parentheses.",
+          severity: "moderate"
+        }
+      ],
+      dominantMistakeType: "Calculation",
+      severityScore: 30,
+      overallSummary: "The student understands the basic equation structure but made an algebraic expansion error due to the distributive property."
+    });
+  }
+
+  if (p.includes("writing coach") || p.includes("writeunblock") || p.includes("unblock")) {
+    return JSON.stringify({
+      firstSentence: "The digital landscape has fundamentally altered the social fabric of adolescent development, transforming peer interactions from physical presence to persistent connection.",
+      angles: [
+        { angle: "Dopaminergic Feedback Loops", hint: "Explore how notifications trigger intermittent reward pathways similar to slot machines." },
+        { angle: "Constructed Identities", hint: "Analyze the psychological toll of curating a perfect online persona vs. real life." }
+      ],
+      surprise: {
+        example: "The 'displacement hypothesis' which suggests screen time hurts sleep quality more than actual social relationships.",
+        why: "This challenges the assumption that content is the only harmful factor, shifting focus to sleep hygiene."
+      }
+    });
+  }
+
   if (p.includes("mustknow") || p.includes("goodtoknow") || p.includes("skip") || p.includes("onesentencesummary")) {
     return JSON.stringify({
       mustKnow: [
@@ -194,11 +284,14 @@ function getMockGenerateResponse(prompt: string): string {
       subject: "Math",
       totalQuestions: 1,
       questions: [{
-        questionNumber: "1",
-        questionText: "Mock past year question",
-        topics: ["Algebra"],
-        difficulty: "Medium",
-        solution: "Mock solution steps"
+        number: "Q1",
+        question: "Mock past year question",
+        marks: 5,
+        topic: "Algebra",
+        modelAnswer: "Mock solution steps",
+        keyTerms: ["mock"],
+        likelyToRepeat: true,
+        repeatReason: "repeated"
       }],
       topicFrequency: {"Algebra": 1},
       examYear: "2024"

@@ -175,7 +175,7 @@ export default function Landing() {
       if (error.code === "auth/popup-closed-by-user") setLoginError(null);
       else if (error.code === "auth/popup-blocked") setLoginError("Pop-up blocked. Please allow pop-ups and try again.");
       else if (error.code === "auth/unauthorized-domain") setLoginError("Error: Localhost is not authorized in Firebase. Add it to Authentication > Settings > Authorized Domains.");
-      else if (error.code === "auth/invalid-api-key") setLoginError("Firebase API key is invalid. Please check your .env configuration or firebase-applet-config.json.");
+      else if (error.code === "auth/invalid-api-key") setLoginError("Firebase API key is invalid. Please check your .env configuration.");
       else setLoginError(error.message || "Sign-in failed. Please try again.");
     } finally {
       setLoggingIn(false);
