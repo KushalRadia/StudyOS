@@ -2,11 +2,8 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { Groq } from "groq-sdk";
-import { createRequire } from "module";
 import dotenv from "dotenv";
-
-const require = createRequire(import.meta.url);
-const { PDFParse: pdf } = require("pdf-parse");
+import { PDFParse as pdf } from "pdf-parse";
 
 dotenv.config({ override: true });
 
