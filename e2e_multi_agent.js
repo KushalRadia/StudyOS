@@ -488,16 +488,18 @@ async function run() {
   });
 
   try {
-    // Launch all agents in parallel to simulate multiple active browser agents
-    const results = await Promise.allSettled([
-      runAgent1(browser),
-      runAgent2(browser),
-      runAgent3(browser),
-      runAgent4(browser),
-      runAgent5(browser),
-      runAgent6(browser),
-      runAgent7(browser)
-    ]);
+    const results = [];
+    const agents = [runAgent1, runAgent2, runAgent3, runAgent4, runAgent5, runAgent6, runAgent7];
+    for (let i = 0; i < agents.length; i++) {
+      console.log(`\n--- Running Agent ${i + 1} ---`);
+      try {
+        await agents[i](browser);
+        results.push({ status: 'fulfilled' });
+      } catch (err) {
+        results.push({ status: 'rejected', reason: err });
+      }
+      await delay(3000); // 3-second delay to guarantee we don't trigger Groq rate limits
+    }
 
     console.log("\n=========================================");
     console.log("📊 MULTI-AGENT E2E TESTING REPORT");

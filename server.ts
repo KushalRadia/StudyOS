@@ -1,22 +1,21 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI } from "@google/genai";
+import { Groq } from "groq-sdk";
+import { createRequire } from "module";
 import dotenv from "dotenv";
+
+const require = createRequire(import.meta.url);
+const { PDFParse: pdf } = require("pdf-parse");
 
 dotenv.config({ override: true });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-// Initialize Gemini
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "",
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
+// Initialize Groq
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY || "",
 });
 
 app.use(express.json({ limit: '50mb' }));
@@ -57,7 +56,7 @@ function getMockGenerateResponse(prompt: string): string {
     });
   }
 
-  if (p.includes("digest this lecture") || p.includes("lecturedigest") || p.includes("lecture digest")) {
+  if (p.includes("digest this lecture") || p.includes("lecturedigest") || p.includes("lecture digest") || p.includes("lecture note-taker")) {
     return JSON.stringify({
       detectedSubject: "Neurobiology",
       keyConcepts: [
@@ -337,34 +336,57 @@ const withTimeout = <T>(promise: Promise<T>, timeoutMs: number, errorMessage = "
   ]);
 };
 
+const TEXT_MODELS = [
+  "llama-3.3-70b-versatile",
+  "llama-3.1-8b-instant"
+];
+
 async function generateContentWithFallback(params: {
   model: string;
   contents: any;
   config?: any;
 }) {
-  const modelsToTry = [
-    params.model || "gemini-2.5-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-8b"
-  ];
-  
+  let promptText = "";
+  if (typeof params.contents === "string") {
+    promptText = params.contents;
+  } else if (params.contents && Array.isArray(params.contents.parts)) {
+    const textPart = params.contents.parts.find((p: any) => p.text);
+    if (textPart) {
+      promptText = textPart.text;
+    } else {
+      promptText = JSON.stringify(params.contents.parts);
+    }
+  } else if (params.contents && typeof params.contents === "object") {
+    promptText = JSON.stringify(params.contents);
+  }
+
   let lastError: any = null;
-  for (const model of modelsToTry) {
+  for (const model of TEXT_MODELS) {
     try {
-      console.log(`[Gemini Proxy] Attempting generation with model: ${model}`);
+      console.log(`[Groq Proxy] Attempting generation with model: ${model}`);
       const response = await withTimeout(
-        ai.models.generateContent({
+        groq.chat.completions.create({
           model: model,
-          contents: params.contents,
-          config: params.config,
+          messages: [
+            {
+              role: "system",
+              content: "You are an advanced study assistant. You must always return your response as a valid, well-formed JSON object or array as requested. Do not wrap the JSON output in markdown code blocks or backticks. Start with '{' or '[' and end with '}' or ']'. Do not output any other text."
+            },
+            {
+              role: "user",
+              content: promptText
+            }
+          ],
+          response_format: { type: "json_object" },
+          temperature: 0.2,
         }),
-        20000, // 20 seconds timeout per model attempt
+        20000,
         `Generation with model ${model} timed out after 20s`
       );
-      return response;
+      return { text: response.choices[0]?.message?.content || "" };
     } catch (error: any) {
       lastError = error;
-      console.warn(`[Gemini Proxy] Model ${model} failed:`, error.message || error);
+      console.warn(`[Groq Proxy] Model ${model} failed:`, error.message || error);
     }
   }
   throw lastError;
@@ -376,31 +398,130 @@ async function sendChatWithFallback(params: {
   message: string;
 }) {
   const modelsToTry = [
-    params.model || "gemini-2.5-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-8b"
+    "llama-3.3-70b-versatile",
+    "llama-3.1-8b-instant"
   ];
+  
+  const messages: any[] = [];
+  for (const item of params.history) {
+    let role = "user";
+    if (item.role === "model" || item.role === "assistant") {
+      role = "assistant";
+    }
+    
+    let content = "";
+    if (Array.isArray(item.parts)) {
+      const textPart = item.parts.find((p: any) => p.text);
+      content = textPart ? textPart.text : JSON.stringify(item.parts);
+    } else if (typeof item.parts === "string") {
+      content = item.parts;
+    } else if (item.content) {
+      content = item.content;
+    }
+    
+    messages.push({ role, content });
+  }
+  
+  messages.push({ role: "user", content: params.message });
   
   let lastError: any = null;
   for (const model of modelsToTry) {
     try {
-      console.log(`[Gemini Proxy] Attempting chat with model: ${model}`);
-      const chat = ai.chats.create({
-        model: model,
-        history: params.history,
-      });
+      console.log(`[Groq Proxy] Attempting chat with model: ${model}`);
       const response = await withTimeout(
-        chat.sendMessage({ message: params.message }),
-        20000, // 20 seconds timeout per model attempt
+        groq.chat.completions.create({
+          model: model,
+          messages: messages,
+          temperature: 0.7,
+        }),
+        20000,
         `Chat with model ${model} timed out after 20s`
       );
-      return response;
+      return { text: response.choices[0]?.message?.content || "" };
     } catch (error: any) {
       lastError = error;
-      console.warn(`[Gemini Proxy] Chat Model ${model} failed:`, error.message || error);
+      console.warn(`[Groq Proxy] Chat Model ${model} failed:`, error.message || error);
     }
   }
   throw lastError;
+}
+
+async function generateMultimodalWithFallback(params: {
+  prompt: string;
+  fileData: string;
+  mimeType: string;
+  model?: string;
+}) {
+  const { prompt, fileData, mimeType } = params;
+
+  if (mimeType.startsWith("image/")) {
+    const visionModels = [
+      "llama-3.2-11b-vision-preview",
+      "llama-3.2-90b-vision-preview"
+    ];
+    
+    let lastError: any = null;
+    for (const model of visionModels) {
+      try {
+        console.log(`[Groq Proxy] Attempting image vision with model: ${model}`);
+        const response = await withTimeout(
+          groq.chat.completions.create({
+            model: model,
+            messages: [
+              {
+                role: "system",
+                content: "You are an advanced exam/study assistant. Answer the user prompt based on the provided image. If the user expects a structured JSON output, return only valid, well-formed JSON without markdown code blocks/fences. Start with '{' or '[' and end with '}' or ']'. Do not output any other text."
+              },
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: prompt },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: `data:${mimeType};base64,${fileData}`
+                    }
+                  }
+                ]
+              }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.2,
+          }),
+          20000,
+          `Vision request with model ${model} timed out after 20s`
+        );
+        return { text: response.choices[0]?.message?.content || "" };
+      } catch (error: any) {
+        lastError = error;
+        console.warn(`[Groq Proxy] Vision Model ${model} failed:`, error.message || error);
+      }
+    }
+    throw lastError;
+  } else if (mimeType === "application/pdf" || mimeType.includes("pdf")) {
+    console.log("[Groq Proxy] Parsing PDF base64 data using pdf-parse...");
+    const pdfBuffer = Buffer.from(fileData, "base64");
+    const parser = new pdf(new Uint8Array(pdfBuffer));
+    const parsedPdf = await parser.getText();
+    const pdfText = parsedPdf.text || "";
+    console.log(`[Groq Proxy] PDF parsed successfully, extracted ${pdfText.length} characters.`);
+    
+    const enrichedPrompt = `
+Here is the text extracted from the uploaded PDF document:
+---START PDF TEXT---
+${pdfText}
+---END PDF TEXT---
+
+Using the text above, answer this request:
+${prompt}
+`;
+    return await generateContentWithFallback({
+      model: "llama-3.3-70b-versatile",
+      contents: enrichedPrompt,
+    });
+  } else {
+    throw new Error(`Unsupported mimeType: ${mimeType}`);
+  }
 }
 
 // API Routes
@@ -414,12 +535,12 @@ app.post("/api/gemini/generate", async (req, res) => {
     });
     res.json({ text: response.text });
   } catch (error: any) {
-    console.warn("Gemini Error, falling back to mock response:", error.message || error);
+    console.warn("Groq Error, falling back to mock response:", error.message || error);
     try {
       const mockText = getMockGenerateResponse(prompt);
       res.json({ text: mockText });
     } catch (mockError: any) {
-      res.status(500).json({ error: error.message || "Gemini and fallback both failed" });
+      res.status(500).json({ error: error.message || "Groq and fallback both failed" });
     }
   }
 });
@@ -427,24 +548,20 @@ app.post("/api/gemini/generate", async (req, res) => {
 app.post("/api/gemini/multimodal", async (req, res) => {
   const { prompt, fileData, mimeType, model: modelName, config } = req.body;
   try {
-    const response = await generateContentWithFallback({
+    const response = await generateMultimodalWithFallback({
+      prompt,
+      fileData,
+      mimeType,
       model: modelName,
-      contents: {
-        parts: [
-          { inlineData: { data: fileData, mimeType } },
-          { text: prompt }
-        ]
-      },
-      config: config,
     });
     res.json({ text: response.text });
   } catch (error: any) {
-    console.warn("Gemini Multimodal Error, falling back to mock response:", error.message || error);
+    console.warn("Groq Multimodal Error, falling back to mock response:", error.message || error);
     try {
       const mockText = getMockGenerateResponse(prompt);
       res.json({ text: mockText });
     } catch (mockError: any) {
-      res.status(500).json({ error: error.message || "Gemini and fallback both failed" });
+      res.status(500).json({ error: error.message || "Groq and fallback both failed" });
     }
   }
 });
@@ -463,12 +580,12 @@ app.post("/api/gemini/chat", async (req, res) => {
     });
     res.json({ text: response.text });
   } catch (error: any) {
-    console.warn("Gemini Chat Error, falling back to mock response:", error.message || error);
+    console.warn("Groq Chat Error, falling back to mock response:", error.message || error);
     try {
       const mockText = getMockChatResponse(history);
       res.json({ text: mockText });
     } catch (mockError: any) {
-      res.status(500).json({ error: error.message || "Gemini and fallback both failed" });
+      res.status(500).json({ error: error.message || "Groq and fallback both failed" });
     }
   }
 });
