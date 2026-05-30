@@ -18,3 +18,9 @@ firebase-applet-config.json
 # Firebase cache
 .firebase/
 .firebaserc
+
+# Testing and verification files
+verify_all.cjs
+e2e_multi_agent.js
+pressure_test.cjs
+dummy.pdf
